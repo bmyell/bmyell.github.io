@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="robocup2d,ubuntu," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="参考了网上的文章，搭建2d平台">
+<meta name="keywords" content="robocup2d,ubuntu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ubuntu14.10 搭建 Robocup 2d 平台">
+<meta property="og:url" content="https://www.bmyell.github.io/2015/06/28/ubuntu14.10 搭建 Robocup 2d 平台/index.html">
+<meta property="og:site_name" content="安琪拉">
+<meta property="og:description" content="参考了网上的文章，搭建2d平台">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://115.159.108.204/wp-content/uploads/2016/03/24133916-01385e48bddc47d6b0b2c1913392abac.png">
+<meta property="og:image" content="http://115.159.108.204/wp-content/uploads/2016/03/24133111-28a1587e20424adcaf59b0047d08b723.png">
+<meta property="og:updated_time" content="2017-02-08T11:40:39.876Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ubuntu14.10 搭建 Robocup 2d 平台">
+<meta name="twitter:description" content="参考了网上的文章，搭建2d平台">
+<meta name="twitter:image" content="http://115.159.108.204/wp-content/uploads/2016/03/24133916-01385e48bddc47d6b0b2c1913392abac.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://www.bmyell.github.io/2015/06/28/ubuntu14.10 搭建 Robocup 2d 平台/"/>
+
+
+
+
+
+  <title>ubuntu14.10 搭建 Robocup 2d 平台 | 安琪拉</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">安琪拉</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">welcome!</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br />
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off"
+             placeholder="搜索..." spellcheck="false"
+             type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://www.bmyell.github.io/2015/06/28/ubuntu14.10 搭建 Robocup 2d 平台/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Bmyell">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/../images/touxiang.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="安琪拉">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">ubuntu14.10 搭建 Robocup 2d 平台</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2015-06-28T10:05:00+08:00">
+                2015-06-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/robocup/" itemprop="url" rel="index">
+                    <span itemprop="name">robocup</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2015/06/28/ubuntu14.10 搭建 Robocup 2d 平台/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2015/06/28/ubuntu14.10 搭建 Robocup 2d 平台/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+            <span class="post-meta-divider">|</span>
+            <span class="page-pv"><i class="fa fa-file-o"></i>
+            <span class="busuanzi-value" id="busuanzi_value_page_pv" ></span>
+            </span>
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>参考了网上的文章，搭建2d平台<br><a id="more"></a><br><span style="font-family: Times New Roman;"><span>Robocup2D</span></span><span><span style="font-family: 宋体;">仿真平台需要运行在类</span><span style="font-family: Times New Roman;">Unix</span><span style="font-family: 宋体;">环境中，因此本例安装</span><span style="font-family: Times New Roman;">Ubuntu</span><span style="font-family: 宋体;">系统。</span><span style="font-family: Times New Roman;">Robocup2D</span><span style="font-family: 宋体;">官方源码主要包含</span><span style="font-family: Times New Roman;">rcssserver</span><span style="font-family: 宋体;">，</span><span style="font-family: Times New Roman;">rcssmonitor</span><span style="font-family: 宋体;">和</span><span style="font-family: Times New Roman;">rcsslogplayer 3</span><span style="font-family: 宋体;">个部分，</span><span style="font-family: Times New Roman;">Server</span><span style="font-family: 宋体;">是总控台，所有信息交互和处理都是在这里进行；</span><span style="color: #000000; font-family: Times New Roman;">Monitor</span><span style="font-family: 宋体;">是监控器，与</span><span style="font-family: Times New Roman;">server</span><span style="font-family: 宋体;">连接，用于模拟显示球场场景；</span><span style="font-family: Times New Roman;">Logplayer</span><span style="font-family: 宋体;">用于回放比赛，演示时可以不用安装。</span><span style="font-family: Times New Roman;">Server</span><span style="font-family: 宋体;">和</span><span style="font-family: Times New Roman;">Monitor</span><span style="font-family: 宋体;">安装好后可以显示球场，球员上场还需要</span><span style="font-family: Times New Roman;">Client</span></span><span style="font-family: 宋体;"><span>端，可以从中科大官网下载他们的源码，直接运行脚本加入球员。</span></span></p>
+<h1 id="1-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-传送门"><a href="#1-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-传送门" class="headerlink" title="1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 传送门"></a><span style="font-family: Times New Roman;"><span>1</span><span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span>传送门</span></span></h1><p><span style="font-family: Times New Roman;"><span>Robocup2D</span></span><span><span style="font-family: 宋体;">仿真机器人足球官网：</span></span><a href="http://www.robocup.org/robocup-soccer/simulation/" target="_blank" rel="noopener"><span style="font-family: Times New Roman;"><span style="color: #0000ff;"><span style="text-decoration: underline;">http://www.robocup.org/robocup-soccer/simulation/</span></span></span></a></p>
+<p><span style="font-family: 宋体;"><span>官方介绍（包含后面两个链接）：</span></span><a href="http://sourceforge.net/apps/mediawiki/sserver/index.php?title=Main_Page" title="Main_Page" target="_blank" rel="noopener"><span style="font-family: Times New Roman;"><span style="color: #0000ff;"><span style="text-decoration: underline;">http://sourceforge.net/apps/mediawiki/sserver/index.php?title=Main_Page</span></span></span></a></p>
+<p><span style="font-family: 宋体;"><span>官方源文件：</span></span><a href="http://sourceforge.net/projects/sserver/files/" target="_blank" rel="noopener"><span style="font-family: Times New Roman;"><span style="color: #0000ff;"><span style="text-decoration: underline;">http://sourceforge.net/projects/sserver/files/</span></span></span></a></p>
+<p><span style="font-family: 宋体;"><span>官方安装方法：</span></span><a href="http://sourceforge.net/apps/mediawiki/sserver/index.php?title=Installing_server_server_system" title="Installing_server_server_system" target="_blank" rel="noopener"><span style="font-family: Times New Roman;"><span style="color: #0000ff;"><span style="text-decoration: underline;">http://sourceforge.net/apps/mediawiki/sserver/index.php?title=Installing_server_server_system</span></span></span></a></p>
+<p><span style="font-family: 宋体;"><span>中科大公布源码:<a href="http://www.wrighteagle.org/2d/" target="_blank" rel="noopener"><span style="color: #0000ff; font-family: Times New Roman;"><span style="text-decoration: underline;">http://www.wrighteagle.org/2d/</span></span></a></span></span></p>
+<p>&nbsp;</p>
+<h1 id="2-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-安装及配置UNIX环境（此处省略很多字）"><a href="#2-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-安装及配置UNIX环境（此处省略很多字）" class="headerlink" title="2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 安装及配置UNIX环境（此处省略很多字）"></a><span style="font-family: Times New Roman;"><span>2</span><span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span>安装及配置</span></span><span><span style="font-family: Times New Roman;">UNIX</span></span><span style="font-family: 宋体;"><span>环境</span></span>（此处省略很多字）</h1><h2 id="调出终端模拟器"><a href="#调出终端模拟器" class="headerlink" title="调出终端模拟器"></a><span style="font-family: 宋体;"><span><span>调出终端模拟器</span></span></span></h2><p><span style="font-family: 宋体;"><span>方法一（</span></span><span><span style="font-family: Times New Roman;">GUI</span><span style="font-family: 宋体;">）：在</span><span style="font-family: Times New Roman;">Ubuntu</span><span style="font-family: 宋体;">的</span><span style="font-family: Times New Roman;">Dash home</span><span style="font-family: 宋体;">（左上角）中找到</span><span style="font-family: Times New Roman;">Terminal</span></span><span style="font-family: 宋体;"><span>，启动。</span></span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;"><span>方法二（</span></span><span><span style="font-family: Times New Roman;">CLI</span><span style="font-family: 宋体;">）：</span><span style="font-family: Times New Roman;">Ctrl+Alt+F1~F6</span><span style="font-family: 宋体;">启动命令行界面，</span><span style="font-family: Times New Roman;">Ctrl+Alt+F7</span></span><span style="font-family: 宋体;"><span>重新回到图形界面。</span></span></p>
+<p><span style="font-family: 宋体;"><span style="font-family: 宋体;"><span>推荐：在后面的步骤添加</span></span><span><span style="font-family: Times New Roman;">Terminal</span><span style="font-family: 宋体;">右键菜单后，直接在文件夹上右键选择</span><span style="font-family: Times New Roman;">Open in Terminal</span></span><span style="font-family: 宋体;"><span>就可以命令行到对应的文件夹路径下</span></span></span></p>
+<p>&nbsp;</p>
+<h2 id="2-3-nbsp-nbsp-nbsp-安装相关软件"><a href="#2-3-nbsp-nbsp-nbsp-安装相关软件" class="headerlink" title="2.3&nbsp;&nbsp;&nbsp; 安装相关软件"></a><span style="font-family: Arial;"><span><span>2.3</span></span></span><span style="font-family: Times New Roman;"><span><span>&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span><span>安装相关软件</span></span></span></h2><p>&nbsp;</p>
+<p><span style="font-family: Times New Roman;"><span>sudo apt-get install build-essential</span></span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: Times New Roman;"><span>sudo apt-get install flex bison</span></span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: Times New Roman;"><span>sudo apt-get install libboost1.50-all-dev</span></span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: Times New Roman;"><span>sudo apt-get install libqt4-dev qt4-dev-tools qt4-designer libqt4-gui libqt4-network libqt4-opengl-dev</span></span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: Times New Roman;"><span>sudo apt-get install zlib1g-dev</span></span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: Times New Roman;"><span>sudo apt-get install nautilus-open-terminal</span></span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;"><span>上面第一条命令用于安装基本编译器，后面四条命令分别用于安装</span></span><span><span style="font-family: Times New Roman;">flex &amp; bison, Boost, Qt4, zlib</span><span style="font-family: 宋体;">，直接输入运行（</span><span style="font-family: Times New Roman;">GUI</span><span style="font-family: 宋体;">的</span><span style="font-family: Times New Roman;">Terminal</span><span style="font-family: 宋体;">中可以直接右键粘贴），最后一条用于将</span><span style="font-family: Times New Roman;">Terminal</span></span><span style="font-family: 宋体;"><span>添加到右键菜单。</span></span></p>
+<p>&nbsp;</p>
+<p><span style="font-family: Times New Roman;"><span>PS</span></span><span><span style="font-family: 宋体;">：</span><span style="font-family: Times New Roman;">apt-get</span><span style="font-family: 宋体;">表示从网上软件库中搜索和安装软件，添加终端模拟器</span><span style="font-family: Times New Roman;">Terminal</span></span><span style="font-family: 宋体;"><span>后，直接右键项可以进入对应文件夹命令行。</span></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h1 id="3-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-安装配置Robocup-2D环境"><a href="#3-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-安装配置Robocup-2D环境" class="headerlink" title="3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 安装配置Robocup 2D环境"></a><span style="font-family: Times New Roman;"><span>3</span><span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span>安装配置</span></span><span><span style="font-family: Times New Roman;">Robocup 2D</span></span><span style="font-family: 宋体;"><span>环境</span></span></h1><p><span style="font-family: 宋体;"><span>下载</span></span><span><span style="font-family: Times New Roman;">rcssserver</span><span style="font-family: 宋体;">和</span><span style="font-family: Times New Roman;">rcssmonitor</span><span style="font-family: 宋体;">（我下载的是</span><span style="font-family: Times New Roman;">15.1.0</span><span style="font-family: 宋体;">版本，地址</span><a href="http://sourceforge.net/projects/sserver/files/" target="_blank" rel="noopener"><span style="color: #0000ff; font-family: Times New Roman;"><span style="text-decoration: underline;">http://sourceforge.net/projects/sserver/files/</span></span></a><span style="font-family: 宋体;">）。分别解压到</span><span style="font-family: Times New Roman;">Ubuntu</span><span style="font-family: 宋体;">的本地文件夹内，如</span><span style="font-family: Times New Roman;">/Robocup/ rcssserver-15.1.0</span><span style="font-family: 宋体;">，</span><span style="font-family: Times New Roman;">/Robocup/ rcssmonitor-15.1.0</span></span><span style="font-family: 宋体;"><span>。</span></span></p>
+<h2 id="3-1-nbsp-nbsp-nbsp-安装rcssserver"><a href="#3-1-nbsp-nbsp-nbsp-安装rcssserver" class="headerlink" title="3.1&nbsp;&nbsp;&nbsp; 安装rcssserver"></a><span style="font-family: Arial;"><span><span>3.1</span></span></span><span style="font-family: Times New Roman;"><span><span>&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span><span>安装</span></span></span><span style="font-family: Arial;"><span><span>rcssserver</span></span></span></h2><p><span style="font-family: 宋体;"><span>进入</span></span><span><span style="font-family: Times New Roman;">rcssserver-15.1.0</span></span><span style="font-family: 宋体;"><span>目录后运行下面的命令：</span></span></p>
+<p><span style="font-family: Times New Roman;"><span>./configure</span></span></p>
+<p><span style="font-family: Times New Roman;"><span>make</span></span></p>
+<p><span style="font-family: Times New Roman;"><span>sudo make install</span></span></p>
+<p><span style="font-family: Times New Roman;"><span>./configure</span></span><span><span style="font-family: 宋体;">用来检查环境，</span><span style="font-family: Times New Roman;">make</span><span style="font-family: 宋体;">用来编译，</span><span style="font-family: Times New Roman;">make install</span><span style="font-family: 宋体;">用来安装（</span><span style="font-family: Times New Roman;">sudo</span></span><span style="font-family: 宋体;"><span>赋予权限）。</span></span></p>
+<p><span style="font-family: Times New Roman;"><span>PS</span></span><span><span style="font-family: 宋体;">：</span><span style="font-family: Times New Roman;">./configure</span><span style="font-family: 宋体;">后，一般</span><span style="font-family: Times New Roman;">checking</span><span style="font-family: 宋体;">后的结果不为</span><span style="font-family: Times New Roman;">no</span><span style="font-family: 宋体;">表示环境符合，如下图两个</span><span style="font-family: Times New Roman;">&rdquo;no&rdquo;</span><span style="font-family: 宋体;">结果表示</span><span style="font-family: Times New Roman;">Boost</span><span style="font-family: 宋体;">没有装好，</span><span style="font-family: Times New Roman;">make</span></span><span style="font-family: 宋体;"><span>的时候可能会出现一些问题。</span></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-family: Times New Roman;"><span>make</span></span><span><span style="font-family: 宋体;">和</span><span style="font-family: Times New Roman;">make install</span><span style="font-family: 宋体;">通过时不会出现</span><span style="font-family: Times New Roman;">error</span></span><span style="font-family: 宋体;"><span>提示。</span></span></p>
+<h2 id="3-2-nbsp-nbsp-nbsp-安装monitor"><a href="#3-2-nbsp-nbsp-nbsp-安装monitor" class="headerlink" title="3.2&nbsp;&nbsp;&nbsp; 安装monitor"></a><span style="font-family: Arial;"><span><span>3.2</span></span></span><span style="font-family: Times New Roman;"><span><span>&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span><span>安装</span></span></span><span style="font-family: Arial;"><span><span>monitor</span></span></span></h2><p><span style="font-family: 宋体;"><span>进入</span></span><span><span style="font-family: Times New Roman;">rcssmonitor -15.1.0</span></span><span style="font-family: 宋体;"><span>目录后运行下面的命令：</span></span></p>
+<p><span style="font-family: Times New Roman;"><span>./configure</span></span></p>
+<p><span style="font-family: Times New Roman;"><span>make</span></span></p>
+<p><span style="font-family: Times New Roman;"><span>sudo make install</span></span></p>
+<p><span style="font-family: Times New Roman;"><span>PS</span></span><span><span style="font-family: 宋体;">：安装</span><span style="font-family: Times New Roman;">Monitor</span><span style="font-family: 宋体;">的时候可能会出现</span><span style="font-family: Times New Roman;">connot find &ndash;lxxx</span></span><span style="font-family: 宋体;"><span>的错误，是因为没有找到相关库，一般通过</span></span></p>
+<p><span style="font-family: Times New Roman;"><span>sudo apt-get install libxxx-dev</span></span></p>
+<p><span style="font-family: 宋体;"><span>可以在线安装解决，但有的命名不一定是这种规则，可以通过</span></span></p>
+<p><span style="font-family: Times New Roman;"><span>apt-cache search xxx</span></span></p>
+<p><span style="font-family: 宋体;"><span>来找到对应名字安装，或者直接百度之。</span></span></p>
+<p><span style="font-family: 宋体;"><span>下图是我安装的时候出现的问题及解决方法：</span></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-family: Times New Roman;"><span>sudo apt-get install libaudio-dev libXt-dev libpng-dev liboobs-1-dev </span></span><span><span style="color: #000000; font-family: Times New Roman;">libXi-dev</span></span><span style="font-family: Times New Roman;"><span> libXrender-dev libfreetype6-dev libfontconfig-dev</span></span></p>
+<h2 id="3-3-nbsp-nbsp-nbsp-运行server和monitor"><a href="#3-3-nbsp-nbsp-nbsp-运行server和monitor" class="headerlink" title="3.3&nbsp;&nbsp;&nbsp; 运行server和monitor"></a><span style="font-family: Arial;"><span><span>3.3</span></span></span><span style="font-family: Times New Roman;"><span><span>&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span><span>运行</span></span></span><span><span style="font-family: Arial;"><span>server</span></span><span style="font-family: 宋体;"><span>和</span></span></span><span style="font-family: Arial;"><span><span>monitor</span></span></span></h2><p><span style="font-family: Times New Roman;"><span>rcsoccersim</span></span></p>
+<p><span style="font-family: 宋体;"><span>无论在哪个路径下输入上述命令即可启动，启动后如下图：</span></span></p>
+<p>&nbsp;<img src="http://115.159.108.204/wp-content/uploads/2016/03/24133916-01385e48bddc47d6b0b2c1913392abac.png" alt="http://115.159.108.204/wp-content/uploads/2016/03/24133916-01385e48bddc47d6b0b2c1913392abac.png"></p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;"><span>如果出来的界面不像这样（例如最上面没有球员位），可能需要重启。</span></span></p>
+<h1 id="4-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-添加球员"><a href="#4-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-添加球员" class="headerlink" title="4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 添加球员"></a><span style="font-family: Times New Roman;"><span>4</span><span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span>添加球员</span></span></h1><p><span style="font-family: 宋体;"><span>下载中科大</span></span><span><span style="font-family: Times New Roman;">WrightEagle</span><span style="font-family: 宋体;">站队开源代码（本例使用</span><span style="font-family: Times New Roman;">WrightEagleBASE-4.0.0 </span><span style="font-family: 宋体;">）</span><a href="http://www.wrighteagle.org/2d/" target="_blank" rel="noopener"><span style="color: #0000ff; font-family: Times New Roman;"><span style="text-decoration: underline;">http://www.wrighteagle.org/2d/</span></span></a></span><span style="font-family: 宋体;"><span>。</span></span></p>
+<p><span style="font-family: 宋体;"><span>解压后</span></span><span><span style="font-family: Times New Roman;">copy</span></span><span style="font-family: 宋体;"><span>一份，表示两个队伍的源码，如图：</span></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;"><span>修改其中一个文件夹内的</span></span><span><span style="font-family: Times New Roman;">start.sh</span><span style="font-family: 宋体;">文件，修改队名为</span><span style="font-family: Times New Roman;">WEBase2</span></span><span style="font-family: 宋体;"><span>，保存。</span></span></p>
+<p>&nbsp;<img src="http://115.159.108.204/wp-content/uploads/2016/03/24133111-28a1587e20424adcaf59b0047d08b723.png" alt="http://115.159.108.204/wp-content/uploads/2016/03/24133111-28a1587e20424adcaf59b0047d08b723.png"></p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;"><span>分别打开两个</span></span><span><span style="font-family: Times New Roman;">Terminal A</span><span style="font-family: 宋体;">和</span><span style="font-family: Times New Roman;">B</span><span style="font-family: 宋体;">进入两个队伍的文件夹下，运行</span><span style="font-family: Times New Roman;">make</span><span style="font-family: 宋体;">命令编译。下图是</span><span style="font-family: Times New Roman;">Terminal A make</span></span><span style="font-family: 宋体;"><span>好之后的显示内容。</span></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;"><span>再新开一个</span></span><span><span style="font-family: Times New Roman;">Terminal C</span><span style="font-family: 宋体;">，运行</span><span style="font-family: Times New Roman;">rcsoccersim</span></span><span style="font-family: 宋体;"><span>命令启动服务端和监视器。</span></span></p>
+<p><span style="font-family: 宋体;"><span>两个队伍的代码编译好后，分别在</span></span><span><span style="font-family: Times New Roman;">Terminal A</span><span style="font-family: 宋体;">和</span><span style="font-family: Times New Roman;">B</span><span style="font-family: 宋体;">中输入</span><span style="font-family: Times New Roman;">./start.sh</span></span><span style="font-family: 宋体;"><span>命令向服务端加入球员。</span></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="font-family: 宋体;"><span>在监控器界面按</span></span><span><span style="font-family: Times New Roman;">Ctrl+K</span><span style="font-family: 宋体;">可以开始比赛，在</span><span style="font-family: Times New Roman;">Terminal C</span><span style="font-family: 宋体;">界面按</span><span style="font-family: Times New Roman;">Ctrl+C</span></span><span style="font-family: 宋体;"><span>可以关闭监控器。</span></span></p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+      <div>
+        <ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者：</strong>
+    Bmyell
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://www.bmyell.github.io/2015/06/28/ubuntu14.10 搭建 Robocup 2d 平台/" title="ubuntu14.10 搭建 Robocup 2d 平台">https://www.bmyell.github.io/2015/06/28/ubuntu14.10 搭建 Robocup 2d 平台/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>
+    本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/" rel="external nofollow" target="_blank">CC BY-NC-SA 3.0</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+
+      </div>
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/robocup2d/" rel="tag"># robocup2d</a>
+          
+            <a href="/tags/ubuntu/" rel="tag"># ubuntu</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2015/06/26/终端显示颜色 windows/" rel="next" title="终端显示颜色 windows">
+                <i class="fa fa-chevron-left"></i> 终端显示颜色 windows
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2015/11/28/模板的继承/" rel="prev" title="模板的继承">
+                模板的继承 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image"
+                src="/../images/touxiang.jpg"
+                alt="Bmyell" />
+            
+              <p class="site-author-name" itemprop="name">Bmyell</p>
+              <p class="site-description motion-element" itemprop="description">I want to build something!</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">36</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/bmyell" target="_blank" title="github">
+                      
+                        <i class="fa fa-fw fa-globe"></i>github</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://twitter.com/zhileioooo" target="_blank" title="twitter">
+                      
+                        <i class="fa fa-fw fa-globe"></i>twitter</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://weibo.com/u/2984409341?refer_flag=1001030102_" target="_blank" title="weibo">
+                      
+                        <i class="fa fa-fw fa-globe"></i>weibo</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://www.zhihu.com/people/bmyell1234" target="_blank" title="zhihu">
+                      
+                        <i class="fa fa-fw fa-globe"></i>zhihu</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.facebook.com/profile.php?id=100010251648772" target="_blank" title="Facebook">
+                      
+                        <i class="fa fa-fw fa-globe"></i>Facebook</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+            <div class="links-of-blogroll motion-element links-of-blogroll-block">
+              <div class="links-of-blogroll-title">
+                <i class="fa  fa-fw fa-link"></i>
+                Links
+              </div>
+              <ul class="links-of-blogroll-list">
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://google.com/" title="Google" target="_blank">Google</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://hiolive.xyz/" title="Miracle_膜法师" target="_blank">Miracle_膜法师</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://baka233.me/" title="MT_nethacker" target="_blank">MT_nethacker</a>
+                  </li>
+                
+                  <li class="links-of-blogroll-item">
+                    <a href="http://www.cnblogs.com/-210843013" title="Jaeger_中" target="_blank">Jaeger_中</a>
+                  </li>
+                
+              </ul>
+            </div>
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-传送门"><span class="nav-number">1.</span> <span class="nav-text">1        传送门</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-安装及配置UNIX环境（此处省略很多字）"><span class="nav-number">2.</span> <span class="nav-text">2        安装及配置UNIX环境（此处省略很多字）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#调出终端模拟器"><span class="nav-number">2.1.</span> <span class="nav-text">调出终端模拟器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-nbsp-nbsp-nbsp-安装相关软件"><span class="nav-number">2.2.</span> <span class="nav-text">2.3    安装相关软件</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-安装配置Robocup-2D环境"><span class="nav-number">3.</span> <span class="nav-text">3        安装配置Robocup 2D环境</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-nbsp-nbsp-nbsp-安装rcssserver"><span class="nav-number">3.1.</span> <span class="nav-text">3.1    安装rcssserver</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-nbsp-nbsp-nbsp-安装monitor"><span class="nav-number">3.2.</span> <span class="nav-text">3.2    安装monitor</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-nbsp-nbsp-nbsp-运行server和monitor"><span class="nav-number">3.3.</span> <span class="nav-text">3.3    运行server和monitor</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-添加球员"><span class="nav-number">4.</span> <span class="nav-text">4        添加球员</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Bmyell</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+
+
+
+
+        
+<div class="busuanzi-count">
+  <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+  
+    <span class="site-uv">
+      <i class="fa fa-user"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+      
+    </span>
+  
+
+  
+    <span class="site-pv">
+      <i class="fa fa-eye"></i>
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+      
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://bmyell.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'https://www.bmyell.github.io/2015/06/28/ubuntu14.10 搭建 Robocup 2d 平台/';
+          this.page.identifier = '2015/06/28/ubuntu14.10 搭建 Robocup 2d 平台/';
+          this.page.title = 'ubuntu14.10 搭建 Robocup 2d 平台';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://bmyell.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

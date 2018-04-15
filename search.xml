@@ -1,0 +1,593 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search> 
+  
+    
+    <entry>
+      <title>决策树学习和实现</title>
+      <link href="/2018/02/27/%E5%86%B3%E7%AD%96%E6%A0%91%E5%AD%A6%E4%B9%A0%E5%92%8C%E5%AE%9E%E7%8E%B0/"/>
+      <content type="html"><![CDATA[<p>  记得是大二时候的一个课程设计了,到现在都忘了,特温故一下.</p><a id="more"></a><h3 id="1-什么是决策树"><a href="#1-什么是决策树" class="headerlink" title="1.什么是决策树"></a>1.什么是决策树</h3><ul><li>决策树（decision tree）是一个树结构（可以是二叉树或非二叉树）。其每个非叶节点表示一个特征属性上的测试，每个分支代表这个特征属性在某个值域上的输出，而每个叶节点存放一个类别。使用决策树进行决策的过程就是从根节点开始，测试待分类项中相应的特征属性，并按照其值选择输出分支，直到到达叶子节点，将叶子节点存放的类别作为决策结果。</li><li>决策树算法是从数据的属性（或者特征）出发，以属性作为基础，划分不同的类.</li></ul><p>无耻的引用一个来自<a href="https://www.ibm.com/developerworks/cn/analytics/library/ba-1507-decisiontree-algorithm/" target="_blank" rel="noopener">developerworks</a>的图和说明</p><blockquote><img src="http://oosu5b60t.bkt.clouddn.com/images/决策树案例.png"><p>上图是一棵结构简单的决策树，用于预测贷款用户是否具有偿还贷款的能力。贷款用户主要具备三个属性：是否拥有房产，是否结婚，平均月收入。每一个内部节点都表示一个属性条件判断，叶子节点表示贷款用户是否具有偿还能力。例如：用户甲没有房产，没有结婚，月收入 5K。通过决策树的根节点判断，用户甲符合右边分支 (拥有房产为“否”)；再判断是否结婚，用户甲符合左边分支 (是否结婚为否)；然后判断月收入是否大于 4k，用户甲符合左边分支 (月收入大于 4K)，该用户落在“可以偿还”的叶子节点上。所以预测用户甲具备偿还贷款能力。</p></blockquote><p>决策树的判定过程就相当于从树中根结点到某一个叶子结点的遍历,每一步如何遍历是由数据各个特征的具体特征属性决定.<br>其实决策树可以看做<code>if-then</code>的集合..</p><p>实现决策树的算法有很多种,如<code>ID3</code>、<code>C4.5</code>和<code>CART</code>等算法.比较基础的是ID3算法,所以这里介绍的也是该算法.</p><h3 id="2-ID3算法介绍"><a href="#2-ID3算法介绍" class="headerlink" title="2.ID3算法介绍"></a>2.ID3算法介绍</h3><p> ID3算法是以信息熵和信息增益作为衡量标准的分类算法。</p><p> 选取使得信息增益最大的特征进行分裂！也就是作为非叶节点.</p><ul><li>信息熵是代表随机变量的复杂度（不确定度）</li><li>条件熵代表在某一个条件下，随机变量的复杂度（不确定度）<blockquote><p>这两个概念都可以深度展开,这里就不再赘述,可以参看<br><a href="https://zhuanlan.zhihu.com/p/26486223" target="_blank" rel="noopener">通俗理解信息熵</a><br><a href="https://zhuanlan.zhihu.com/p/26551798" target="_blank" rel="noopener">通俗理解条件熵</a><br>而信息增益恰好是：</p></blockquote></li><li><p>信息熵-条件熵。</p><blockquote><p>我们看如下定义：</p></blockquote></li><li><p>当前样本集合 D 中第 k 类样本所占的比例为 pk ，则 D 的信息熵定义为</p><p> $$Ent(D)=-\sum_{k=1}^{|y|}p_k*\log_{2}{p_k}$$</p></li><li><p>离散属性a有V个可能的取值${a1,a2,…av}$;样本集合中,属性<code>a</code>上取值为<code>av</code>的样本集合,记为<code>Dv</code>.</p></li><li><p>用属性<code>a</code>对样本集D尽行划分所获得的<code>信息增益</code></p><p> $$Gain(D,a) = Ent(D) - \sum_{v=1}^{V}\frac{|D^v|}{|D|}Ent(D^v)$$</p></li></ul><h3 id="3-任务"><a href="#3-任务" class="headerlink" title="3.任务"></a>3.任务</h3><p>以下是当时的例子,要求根据这个表格构建决策树,并实现分类.</p><table><thead><tr><th style="text-align:center">Day</th><th style="text-align:center">Outlook</th><th style="text-align:center">Temperature</th><th style="text-align:center">Humidity</th><th style="text-align:center">Wind</th><th style="text-align:center">PlayTennis</th></tr></thead><tbody><tr><td style="text-align:center">1</td><td style="text-align:center">sunny</td><td style="text-align:center">hot</td><td style="text-align:center">high</td><td style="text-align:center">weak</td><td style="text-align:center">No</td></tr><tr><td style="text-align:center">2</td><td style="text-align:center">sunny</td><td style="text-align:center">hot</td><td style="text-align:center">high</td><td style="text-align:center">strong</td><td style="text-align:center">No</td></tr><tr><td style="text-align:center">3</td><td style="text-align:center">overcast</td><td style="text-align:center">hot</td><td style="text-align:center">high</td><td style="text-align:center">weak</td><td style="text-align:center">Yes</td></tr><tr><td style="text-align:center">4</td><td style="text-align:center">rainy</td><td style="text-align:center">mild</td><td style="text-align:center">high</td><td style="text-align:center">weak</td><td style="text-align:center">Yes</td></tr><tr><td style="text-align:center">5</td><td style="text-align:center">rainy</td><td style="text-align:center">cool</td><td style="text-align:center">normal</td><td style="text-align:center">weak</td><td style="text-align:center">Yes</td></tr><tr><td style="text-align:center">6</td><td style="text-align:center">rainy</td><td style="text-align:center">cool</td><td style="text-align:center">normal</td><td style="text-align:center">strong</td><td style="text-align:center">No</td></tr><tr><td style="text-align:center">7</td><td style="text-align:center">overcast</td><td style="text-align:center">cool</td><td style="text-align:center">normal</td><td style="text-align:center">strong</td><td style="text-align:center">Yes</td></tr><tr><td style="text-align:center">8</td><td style="text-align:center">sunny</td><td style="text-align:center">mild</td><td style="text-align:center">high</td><td style="text-align:center">weak</td><td style="text-align:center">No</td></tr><tr><td style="text-align:center">9</td><td style="text-align:center">sunny</td><td style="text-align:center">cool</td><td style="text-align:center">normal</td><td style="text-align:center">weak</td><td style="text-align:center">Yes</td></tr><tr><td style="text-align:center">10</td><td style="text-align:center">rainy</td><td style="text-align:center">mild</td><td style="text-align:center">normal</td><td style="text-align:center">weak</td><td style="text-align:center">Yes</td></tr><tr><td style="text-align:center">11</td><td style="text-align:center">sunny</td><td style="text-align:center">mild</td><td style="text-align:center">normal</td><td style="text-align:center">strong</td><td style="text-align:center">Yes</td></tr><tr><td style="text-align:center">12</td><td style="text-align:center">overcast</td><td style="text-align:center">mild</td><td style="text-align:center">high</td><td style="text-align:center">strong</td><td style="text-align:center">Yes</td></tr><tr><td style="text-align:center">13</td><td style="text-align:center">overcast</td><td style="text-align:center">hot</td><td style="text-align:center">normal</td><td style="text-align:center">weak</td><td style="text-align:center">Yes</td></tr><tr><td style="text-align:center">14</td><td style="text-align:center">rainy</td><td style="text-align:center">mild</td><td style="text-align:center">high</td><td style="text-align:center">strong</td><td style="text-align:center">No</td></tr></tbody></table><blockquote><p>说明： 最后一列 <code>PlayTennis</code>为类别,就是最终想看到的结果,是否要去打网球.前面的除了<code>Day</code>(一般不看这个..)都是属性,可以作为非叶节点.</p></blockquote><p>1.从根节点开始, 最后的类别只有<code>Yes</code>和<code>No</code>两个类别,所以$p_k$的取值也就只有1和2.</p><p>规定,$p_1$为正例(<code>Yes</code>),$p_2$为反例(<code>No</code>),则:<br> $$p_1 = \frac{9}{14}$$,$$p_2 = \frac{5}{14}$$<br>根节点的信息熵为<br>$$Ent(D)=-\sum_{k=1}^{2}p_k\log{2}p_k = -(\frac{9}{14}\log{2}\frac{5}{14}+\frac{5}{14}\log{2}\frac{5}{14})=0.9402859586706309$$</p><ol><li>计算当前<code>属性集合{Outlook,Temperature,Humidity,Wind}</code>中每个属性的信息增益<br><code>Outlook</code>中有<code>{sunny,rainy,overcast}</code>三个可能的取值<br>D1(Outlook=sunny)={1,2,8,9,11} ,$p_1=\frac{2}{5}$,$p_2=\frac{3}{5}$<br>D1(Outlook=rainy)={4,5,6,10,14} ,$p_1=\frac{3}{5}$,$p_2=\frac{2}{5}$<br>D1(Outlook=overcast)={3,7,12,13} ,$p_1=\frac{5}{5}$,$p_2=\frac{0}{5}$<br>三个分支的信息熵<br>$$Ent(D^1)=-(\frac{2}{5}\log{2}\frac{2}{5}+\frac{3}{5}\log{2}\frac{3}{5})=0.9709505944546686$$<br>$$Ent(D^2)=-(\frac{3}{5}\log{2}\frac{3}{5}+\frac{2}{5}\log{2}\frac{2}{5})=0.9709505944546686$$<br>$$Ent(D^3)=-(\frac{4}{4}\log{2}\frac{4}{4}+\frac{0}{4}\log{2}\frac{0}{4})=0.0$$<br>从而可以知道属性<code>Outlook</code>的信息增益是:<br>$$Gain(D,Outlook) = Ent(D) - \sum_{v=1}^{3}\frac{|D^v|}{|D|}Ent(D^v) =0.9402859586706309 -( \frac{5}{14}<em>0.9709505944546686+\frac{5}{14}</em>0.9709505944546686+\frac{4}{14}*0.0)=0.06300830809030594$$</li></ol><p>同理,我们可以求出其他属性的信息增益,分别如下<br>…待更</p>]]></content>
+      
+      
+        <tags>
+            
+            <tag> c++ </tag>
+            
+            <tag> matlab </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>重装系统后hexo配置</title>
+      <link href="/2018/01/16/%E9%87%8D%E8%A3%85%E7%B3%BB%E7%BB%9F%E5%90%8Ehexo%E9%85%8D%E7%BD%AE/"/>
+      <content type="html"><![CDATA[<p> 好久没写blog了，由于后面的工作需要记录的地方，又把hexo拾起来。</p><a id="more"></a><p>由于重新安装了系统，所以hexo需要的环境也得重新配置，同时对于一些概念也有了新的看法，这里记录如下。</p><h2 id="hexo"><a href="#hexo" class="headerlink" title="hexo"></a>hexo</h2><blockquote><p>Hexo 是一个快速、简洁且高效的博客框架。Hexo 使用 Markdown（或其他渲染引擎）解析文章，在几秒内，即可利用靓丽的主题生成静态网页。</p></blockquote><p>   官方是这么说的，蛤蛤，其实也可以理解成一套工具，可以将markdown渲染成html。</p><h2 id="hexo和他的依赖"><a href="#hexo和他的依赖" class="headerlink" title="hexo和他的依赖"></a>hexo和他的依赖</h2><h3 id="nodejs"><a href="#nodejs" class="headerlink" title="nodejs"></a>nodejs</h3><p>为什么需要nodejs呢，因为 hexo 是基于nodejs写的一套博客框架。</p><blockquote><p>Node.js是一个后端的Javascript运行环境（支持的系统包括*nux、Windows），这意味着你可以编写系统级或者服务器端的Javascript代码，交给Node.js来解释执行，简单的命令类似于：<br> <code>node helloworld.js</code></p></blockquote><blockquote><p>Node.js采用了Google Chrome浏览器的V8引擎，性能很好，<br> 同时还提供了很多系统级的API，如文件操作、网络编程等。<br> 浏览器端的Javascript代码在运行时会受到各种安全性的限制，对客户系统的操作有限。<br> 相比之下，Node.js则是一个全面的后台运行时，为Javascript提供了其他语言能够实现的许多功能。</p></blockquote><p> 安装 ubuntu下<br>  这里我不建议直接 <code>apt-get</code> 的方式，亲测版本较低。<br>  可以到官网下载源代码包，手动编译，安装。<br>  <a href="https://nodejs.org/zh-cn/download/" target="_blank" rel="noopener">官方链接</a><br>  之后解压，<br>   <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">./configure</span><br><span class="line">make </span><br><span class="line">sudo make install</span><br></pre></td></tr></table></figure></p><p>不用多说。之后npm也会安装上。 </p><h3 id="npm"><a href="#npm" class="headerlink" title="npm"></a>npm</h3><p>   npm 全称 node package manager。<br>   也就是nodejs的包管理器，可以用它来安装，更新，删除一些包。<br>   本文用到的<code>hexo</code>也是用它来安装的。</p><h3 id="git"><a href="#git" class="headerlink" title="git"></a>git</h3><p>   这个就不用多说了，分布式管理工具，可以去远程仓库克隆代码到本地，同时，本地的<code>hexo</code>也需要他把本地的html文件提交到远程。</p><h2 id="git仓库"><a href="#git仓库" class="headerlink" title="git仓库"></a>git仓库</h2><p>   由于我之前在腾讯云的主机上建了一个仓库，所以现在需要在远程主机上重新提交本地主机的公钥<br>   也就是把 <code>~/.ssh/</code> 里面的 <code>id_rsa.pub</code> 文件内容追加到远程的<code>~/.ssh/</code>里的<code>authorized_keys</code><br>   这里在网上找到一种简便的方法<br>   <code>ssh-copy-id -i ~/.ssh/id_rsa.pub USER@B_ip</code><br>   把后面的<code>USER@B_ip</code>更换即可<br>   以上做的目的是为了免密验证登录<br>   可以使用 <code>ssh -v USER@B_ip</code> 来测试，使用参数 v 的目的是为了<br>   可以显示出登录验证中的信息，如果有错误可以在终端中看到，也就能找到解决的办法。</p><h2 id="评论挂了-2333"><a href="#评论挂了-2333" class="headerlink" title="评论挂了 2333"></a>评论挂了 2333</h2><p>   这个时候才发现多说在去年6月就挂了，没办法，只能采用新的评论系统，刚好发现这个主题的作者已经开始使用<code>友言</code>，<br>   我也跟着注册了一个，操作比较简单就不放图了。</p><h2 id="新主题"><a href="#新主题" class="headerlink" title="新主题"></a>新主题</h2><p>   看来以后在使用新主题之前需要先截个图留个念。<br>   发现每条博文前面有图片，但是显示都是默认的，怎么让他显示好看一点的图片呢。</p><h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><blockquote><p><a href="https://www.felix021.com/blog/read.php?2085" target="_blank" rel="noopener">ssh-copy-id </a><br>  <a href="https://hexo.io/zh-cn/docs/index.html" target="_blank" rel="noopener">hexo官网</a><br>  <a href="https://handsomeliuyang.github.io/2016/03/16/hexo%E7%90%86%E8%A7%A3/#Hexo的源码，官网，Module" target="_blank" rel="noopener">hexo的理解</a><br>  <a href="http://www.infoq.com/cn/articles/what-is-nodejs" target="_blank" rel="noopener">什么是nodejs</a></p></blockquote>]]></content>
+      
+      
+        <tags>
+            
+            <tag> hexo </tag>
+            
+            <tag> ubuntu </tag>
+            
+            <tag> git </tag>
+            
+            <tag> ssh </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>ubuntu14.04 安装texlive2016</title>
+      <link href="/2017/07/18/ubuntu14-04-%E5%AE%89%E8%A3%85texlive2016/"/>
+      <content type="html"><![CDATA[<p>   忽然想写个文档，在ubuntu环境下，又想起了latex，于是在ubuntu14.04的环境下进行配置，<br>   记录如下。<br><a id="more"></a></p><h1 id="1-准备工作的"><a href="#1-准备工作的" class="headerlink" title="1. 准备工作的"></a>1. 准备工作的</h1><p>   笔者之前已经在windows系统中下载过镜像。还是留个官方的链接<br>   <a href="http://www.tug.org/texlive/" target="_blank" rel="noopener">http://www.tug.org/texlive/</a><br>   建议不用在线安装。</p><h1 id="2-挂载texlive"><a href="#2-挂载texlive" class="headerlink" title="2. 挂载texlive"></a>2. 挂载texlive</h1><p>   比较简单的是双击<br>   可以看到下图<br>   <img src="../../../../images/mount_tex_live.png" alt="images/mount_tex_live.png"></p><h1 id="3-安装"><a href="#3-安装" class="headerlink" title="3. 安装"></a>3. 安装</h1><p>   在终端中打开<br>   <code>sudo ./install-tl</code><br>   之后选择<br>   <code>i</code><br>   全部安装</p><p>   <img src="../../../../images/Enter_commond.png" alt=""></p><h1 id="4-配置环境变量"><a href="#4-配置环境变量" class="headerlink" title="4. 配置环境变量"></a>4. 配置环境变量</h1><p>   打开 <code>~/.bashrc</code><br>   添加以下内容<br>   <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">export TEX_HOME=/usr/local/texlive/2016</span><br><span class="line">export PATH=$PATH:$TEX_HOME/bin/x86_64-linux</span><br><span class="line">export INFOPATH=$INFOPATH:$TEX_HOME/texmf-dist/doc/info</span><br><span class="line">export MANPATH=$MANPATH:$TEX_HOME/texmf-dist/doc/man</span><br></pre></td></tr></table></figure></p><p>   之后执行<br>   <code>source .bashrc</code></p><p>   可以使用<br>   <code>tex --version</code> 来测试<br>   <img src="../../../../images/tex_confirm.png" alt=""></p><h1 id="5-配置字体"><a href="#5-配置字体" class="headerlink" title="5 配置字体"></a>5 配置字体</h1><p>   首先是复制 windows的字体<br>   一般是在里面<br>   <code>C:\Windows\Fonts</code><br>   先把Fonts整个目录复制到ubunu的home目录<br>   之后执行下面的操作<br>   <figure class="highlight plain"><figcaption><span>创建 win 下字体专用文件夹</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir /usr/share/fonts/winfonts</span><br><span class="line"></span><br><span class="line"># 复制</span><br><span class="line">sudo cp ~/WinFonts/* /usr/share/fonts/winfonts</span><br><span class="line"></span><br><span class="line"># 进入字体文件夹</span><br><span class="line">cd /usr/share/fonts/winfonts</span><br><span class="line"></span><br><span class="line"># 修改访问权限</span><br><span class="line">sudo chmod 744 *</span><br><span class="line"></span><br><span class="line"># 回到主目录</span><br><span class="line">cd ~</span><br><span class="line"></span><br><span class="line"># 更新字体信息</span><br><span class="line">sudo mkfontscale</span><br><span class="line">sudo mkfontdir</span><br><span class="line">sudo fc-cache -f -v</span><br></pre></td></tr></table></figure></p><h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><blockquote><p><a href="https://segmentfault.com/a/1190000004059490" target="_blank" rel="noopener">https://segmentfault.com/a/1190000004059490</a></p></blockquote>]]></content>
+      
+      
+        <tags>
+            
+            <tag> ubuntu </tag>
+            
+            <tag> texlive </tag>
+            
+            <tag> 配置 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>风信子的成长记</title>
+      <link href="/2017/04/22/%E9%A3%8E%E4%BF%A1%E5%AD%90%E7%9A%84%E6%88%90%E9%95%BF%E8%AE%B0/"/>
+      <content type="html"><![CDATA[<p>  测试。。<br><a id="more"></a></p><h3 id="4-19-种球"><a href="#4-19-种球" class="headerlink" title="4.19 种球"></a>4.19 种球</h3><p>从快递那把风信子的种球带回了实验室</p><blockquote><p>这是大蒜吗？<br>…不是</p></blockquote><img src="http://oosu5b60t.bkt.clouddn.com/images/fengxingzi01.jpg"><p>按照教程上的给风信子的种球泡了多菌灵，之后在瓶子中倒入混有生根粉的水，<br>但是要保证种球的根不能泡在水里．处理好之后需要放在通风背阴出，在生长出大量根之前，需要把瓶子遮光．</p><h3 id="4-21-生根"><a href="#4-21-生根" class="headerlink" title="4.21 生根"></a>4.21 生根</h3><p>　　可以看到有根了！　不过另外一颗没有什么反应．<br><img src="http://oosu5b60t.bkt.clouddn.com/images/fengxinzi02.jpg"></p><h3 id="4-24"><a href="#4-24" class="headerlink" title="4.24"></a>4.24</h3><p>另外一颗也有根了.<br><img src="http://oosu5b60t.bkt.clouddn.com/images/fenxinzi03.jpg"></p><h3 id="4-26"><a href="#4-26" class="headerlink" title="4.26"></a>4.26</h3><p>一颗有了两个根，但是其中一个根被我弄断了，然后就不长了<br>另外一颗根已经好长了，而且叶子也变绿了,一种生命的绿<br><img src="http://oosu5b60t.bkt.clouddn.com/images/2017-4-26-2.jpg"><br><img src="http://oosu5b60t.bkt.clouddn.com/images/2017-4-26-1.jpg"></p><h3 id="5-14"><a href="#5-14" class="headerlink" title="5.14"></a>5.14</h3><p>其中一颗送给人了，还剩下一颗，明天来上图**</p>]]></content>
+      
+      
+        <tags>
+            
+            <tag> 生活 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>c++ 预处理器的应用</title>
+      <link href="/2017/04/22/c-%E9%A2%84%E5%A4%84%E7%90%86%E5%99%A8%E7%9A%84%E5%BA%94%E7%94%A8/"/>
+      <content type="html"><![CDATA[<p>   在开发2d代码的时候，经常看到一些预处理器的代码，大多是为了调试方便，所以会用预处理器也就比较重要.<br><a id="more"></a></p><h3 id="1-先看代码"><a href="#1-先看代码" class="headerlink" title="1.先看代码"></a>1.先看代码</h3><p>部分取自<code>yushan-base</code>的config.h<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PAINT_SUCCESS_COURSE</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PREDICT_OPPONENT_REACH_STEP</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PREDICT_OPPONENT_REACH_STEP_LEVEL2</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PREDICT_PLAYER_TURN_CYCLE</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PREDICT_RECEIVER</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT_BALL_UPDATE</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT_EVALUATE</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEBUG_PRINT_FAILED_COURSE</span></span><br></pre></td></tr></table></figure></p><p>取自<code>action_chain_graph.cpp</code></p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> ACTION_CHAIN_LOAD_DEBUG</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">fprintf</span>( <span class="built_in">stderr</span>,</span><br><span class="line">                  <span class="string">"# recursive search: %2d [%ld] % 10lf msec, n=%4lu, average=% 10lf\n"</span>,</span><br><span class="line">                  wm.self().unum(),</span><br><span class="line">                  wm.time().cycle(),</span><br><span class="line">                  msec,</span><br><span class="line">                  n_evaluated,</span><br><span class="line">                  ( n_evaluated == <span class="number">0</span> ? <span class="number">0.0</span> : msec / n_evaluated ) );</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure><p>这样的代码是比较多的，目的是为了<code>debug</code>．</p><h3 id="2-原理"><a href="#2-原理" class="headerlink" title="2.原理"></a>2.原理</h3><blockquote><p>预处理器确保头文件多次包含仍能安全工作，即可以有效地防止头文件重复包含的发生.<br>它由c++语言继承c语言而来，预处理器是在编译之前执行的一段程序。<br>我们比较熟悉的#include 就是一项预处理功能，当预处理器看到#include标记时就会用指定的头文件代替#include。<br>预处理器还会用到一项预处理功能就是头文件保护符，头文件保护符依赖于预处理变量，而预处理变量有两种状态：已定义和未定义。<br>我们经常用#define指令把一个名字设定为预处理变量，</p></blockquote><p>#ifdef 和#ifdnf 指令用于 检查某个预处理变量是否已经定义。</p><p>#ifdef 为真说明变量已经被定义</p><p>#ifndef 为真说明变量还未被定义<br>一旦上述某个检查结果为真则执行后续操作直至遇到#endif指令为止，<br>检查结果为假则忽略在其中间的部分。</p><h3 id="3-测试实例"><a href="#3-测试实例" class="headerlink" title="3.测试实例"></a>3.测试实例</h3><ul><li><p>定义一个<code>config.h</code></p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> LOG_TESt</span></span><br></pre></td></tr></table></figure></li><li><p>在<code>main.cpp</code>文件中包含</p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt; </span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"config.h"</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"> <span class="meta">#<span class="meta-keyword">ifdef</span> LOG_TEST</span></span><br><span class="line">     <span class="built_in">std</span>::<span class="built_in">cout</span>&lt;&lt;<span class="string">"测试有的时候"</span>&lt;&lt;<span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"> <span class="meta">#<span class="meta-keyword">endif</span>    </span></span><br><span class="line">        </span><br><span class="line"> <span class="meta">#<span class="meta-keyword">ifndef</span> LOG_TEST</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span>&lt;&lt;<span class="string">"没有的时候"</span>&lt;&lt;<span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"> <span class="meta">#<span class="meta-keyword">endif</span>    </span></span><br><span class="line">     <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li></ul><p>-测试结果，在config.h里面注释#define　LOG_TEST之后，输出的是<br>‘没有的时候’</p><h3 id="4-结论"><a href="#4-结论" class="headerlink" title="4.结论"></a>4.结论</h3><p>预处理技术主要功能是防止文件被重复包含，但是在这篇博文中强调的是使用预处理命令来实现对球队代码中输出部分选择编译的功能．<br>在球队代码中经常可以看到预编译处理的代码．看懂之间的内容，有助于我们进行代码的选择性调试．</p><blockquote><p>忽然想加个彩蛋<br><img src="http://oosu5b60t.bkt.clouddn.com/images/test.jpg"></p></blockquote><h3 id="5-参考"><a href="#5-参考" class="headerlink" title="5.参考"></a>5.参考</h3><blockquote><p><a href="http://www.itdadao.com/articles/c15a664159p0.html" target="_blank" rel="noopener">c预处理器概述</a></p></blockquote>]]></content>
+      
+      
+        <tags>
+            
+            <tag> c++ </tag>
+            
+            <tag> robocup2d </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>linux 全局搜索含有指定字符的文件</title>
+      <link href="/2017/04/19/linux%E4%B8%8B%E5%AE%9E%E7%8E%B0%E6%8C%87%E5%AE%9A%E7%9B%AE%E5%BD%95%E6%90%9C%E7%B4%A2%E5%AD%97%E7%AC%A6/"/>
+      <content type="html"><![CDATA[<p>  为了在指定目录中搜索含有指定字符串的文件．<br><a id="more"></a></p><h3 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h3><p>   在进行robocup2d的探索时，常常会看到终端中会有一些信息打印出来，<br>　　这个时候我们需要知道信息是从哪个文件来．</p><h3 id="命令"><a href="#命令" class="headerlink" title="命令"></a>命令</h3><p> 如果你想在当前目录下 查找”hello,world!”字符串,可以这样:</p><p><code>grep -rn &quot;hello,world!&quot; *</code></p><p>* : 表示当前目录所有文件，也可以是某个文件名<br>-r 是递归查找<br>-n 是显示行号<br>-R 查找所有文件包含子目录<br>-i 忽略大小写<br>下面是一些有意思的命令行参数：</p><p>grep -i pattern files ：不区分大小写地搜索。默认情况区分大小写，<br>grep -l pattern files ：只列出匹配的文件名，<br>grep -L pattern files ：列出不匹配的文件名，<br>grep -w pattern files ：只匹配整个单词，而不是字符串的一部分（如匹配‘magic’，而不是‘magical’），<br>grep -C number pattern files ：匹配的上下文分别显示[number]行，<br>grep pattern1 | pattern2 files ：显示匹配 pattern1 或 pattern2 的行，<br>grep pattern1 files | grep pattern2 ：显示既匹配 pattern1 又匹配 pattern2 的行。<br>这里还有些用于搜索的特殊符号：</p><p>\&lt; 和 \&gt; 分别标注单词的开始与结尾。<br>例如：<br>grep man <em> 会匹配 ‘Batman’、‘manic’、‘man’等，<br>grep ‘\&lt;man’ </em> 匹配‘manic’和‘man’，但不是‘Batman’，<br>grep ‘\&lt;man\&gt;’ 只匹配‘man’，而不是‘Batman’或‘manic’等其他的字符串。<br>‘^’：指匹配的字符串在行首，<br>‘$’：指匹配的字符串在行尾.</p><h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><blockquote><p><a href="http://151wqooo.blog.51cto.com/2610898/1162118" target="_blank" rel="noopener">http://151wqooo.blog.51cto.com/2610898/1162118</a></p></blockquote>]]></content>
+      
+      
+        <tags>
+            
+            <tag> linux </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>priority_queue &amp; agent2d code</title>
+      <link href="/2017/04/13/priority-queue-agent2d-code/"/>
+      <content type="html"><![CDATA[<p>  记录下优先队列的使用<br><a id="more"></a></p><h3 id="源代码"><a href="#源代码" class="headerlink" title="源代码"></a>源代码</h3><ul><li><code>action_chain_graph.cpp</code><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ChainComparator</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">operator</span><span class="params">()</span><span class="params">( <span class="keyword">const</span> <span class="built_in">std</span>::pair&lt; <span class="built_in">std</span>::<span class="built_in">vector</span>&lt; ActionStatePair &gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">                     <span class="keyword">double</span> &gt; &amp; a,</span></span></span><br><span class="line"><span class="function"><span class="params">                     <span class="keyword">const</span> <span class="built_in">std</span>::pair&lt; <span class="built_in">std</span>::<span class="built_in">vector</span>&lt; ActionStatePair &gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">                     <span class="keyword">double</span> &gt; &amp; b )</span></span></span><br><span class="line"><span class="function">      </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> ( a.second &lt; b.second );</span><br><span class="line">      &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"> <span class="built_in">std</span>::priority_queue</span><br><span class="line">    </span><br><span class="line">    &lt;<span class="built_in">std</span>::pair    &lt; <span class="built_in">std</span>::<span class="built_in">vector</span>&lt; ActionStatePair &gt;, <span class="keyword">double</span> &gt;,</span><br><span class="line">     <span class="built_in">std</span>::<span class="built_in">vector</span>      &lt; <span class="built_in">std</span>::pair&lt; <span class="built_in">std</span>::<span class="built_in">vector</span>&lt; ActionStatePair &gt;, <span class="keyword">double</span> &gt; &gt;,</span><br><span class="line">     ChainComparator &gt; </span><br><span class="line">     <span class="built_in">queue</span>;</span><br></pre></td></tr></table></figure></li></ul><h3 id="优先队列"><a href="#优先队列" class="headerlink" title="优先队列"></a>优先队列</h3><ul><li>#include<queue></queue></li><li><p>基本操作</p><ul><li>empty() 如果队列为空返回真</li><li>pop() 删除对列首元素</li><li>push() 加入一个元素</li><li>size() 返回优先队列中拥有的元素个数</li><li>top() 返回优先队列首元素<br><strong>在默认的优先队列中，优先级高的先出队。如果是数值，就大的先出队列.<br>标准库默认使用元素类型的 &lt; 操作符来确定它们之间的优先级关系.<br>如果需要优先级低的先出队，则需要自定义优先级</strong></li></ul></li><li><p>初始化</p></li></ul><ul><li>重载<code>()</code>运算符来定义优先级</li></ul><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//简单的重载函数</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">cmp</span>    </span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">operator</span> <span class="params">()</span> <span class="params">(<span class="keyword">const</span> <span class="keyword">int</span> &amp;a, <span class="keyword">const</span> <span class="keyword">int</span> &amp;b)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="comment">//由小到大排列采用"&gt;"号，如果要由大到小排列，则采用"&lt;"号；</span></span><br><span class="line">        <span class="keyword">return</span> a &gt; b;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//代码中的重载函数</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ChainComparator</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">operator</span><span class="params">()</span><span class="params">( <span class="keyword">const</span> <span class="built_in">std</span>::pair&lt; <span class="built_in">std</span>::<span class="built_in">vector</span>&lt; ActionStatePair &gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">                     <span class="keyword">double</span> &gt; &amp; a,</span></span></span><br><span class="line"><span class="function"><span class="params">                     <span class="keyword">const</span> <span class="built_in">std</span>::pair&lt; <span class="built_in">std</span>::<span class="built_in">vector</span>&lt; ActionStatePair &gt;,</span></span></span><br><span class="line"><span class="function"><span class="params">                     <span class="keyword">double</span> &gt; &amp; b )</span></span></span><br><span class="line"><span class="function">      </span>&#123;</span><br><span class="line">          <span class="keyword">return</span> ( a.second &lt; b.second );</span><br><span class="line">      &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure><h3 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h3><p>代码中使用了优先队列，并且重载了(),使队列中大值优先<br>如果是默认的优先对列，就是大值优先，但是作者这么写，估计是为了用后面<code>double eval</code>来排序八</p>]]></content>
+      
+      
+        <tags>
+            
+            <tag> robocup2d </tag>
+            
+            <tag> stl </tag>
+            
+            <tag> priority_queue </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>利用樱花网实现科学上网</title>
+      <link href="/2017/02/21/%E5%88%A9%E7%94%A8%E6%A8%B1%E8%8A%B1%E7%BD%91%E5%AE%9E%E7%8E%B0%E7%A7%91%E5%AD%A6%E4%B8%8A%E7%BD%91/"/>
+      <content type="html"><![CDATA[<p> 在朋友的安利下使用了樱花网,实现了科学上网,网速确实比较好.<br> 在这里贴出教程.<br><a id="more"></a></p><h3 id="why"><a href="#why" class="headerlink" title="why"></a>why</h3><p>为了免费科学上网.</p><h3 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h3><ul><li>网页端设置</li><li>本地设置</li></ul><h3 id="1-网页端测试"><a href="#1-网页端测试" class="headerlink" title="1.网页端测试"></a>1.网页端测试</h3><p> 首先是网站<a href="https://app.arukas.io/" target="_blank" rel="noopener">https://app.arukas.io/</a><br> 如果是第一次使用就<code>sign up</code>,或者有<code>github</code>账号也是可以直接登陆的,需要授权<br> 之后是设置<br>  <img src="../../../../images/sss.png" alt=""></p><p>从上往下:</p><ul><li>App Name 随意填</li><li>Image 填入 <code>lowid/ss-with-net-speeder:latest</code></li><li>Instances 默认</li><li>Memory 默认</li><li>Endpoint 默认</li><li>Port 我填了1024</li><li>CMD   <code>ssserver -p 1024 -k password -m aes-256-cfb</code><br>把password改成你想设置的密码</li></ul><p>之后点击<code>create application</code>即可<br> 部署成功后会显示<code>runing</code><br> 在port一栏会有以下信息.<br> <code>Port          http://seaof-153-125-235-174.jp-tokyo-14.arukascloud.io:31075 (1024/tcp)</code><br>       中间的数字就是ip地址,使用的端口是后面的31075,记住就行<br>至此网页端就好了.</p><h3 id="2-本地"><a href="#2-本地" class="headerlink" title="2.本地"></a>2.本地</h3><h4 id="2-1需要安装shadowsocks软件-我这里用的是Ubuntu做测试"><a href="#2-1需要安装shadowsocks软件-我这里用的是Ubuntu做测试" class="headerlink" title="2.1需要安装shadowsocks软件.我这里用的是Ubuntu做测试"></a>2.1需要安装shadowsocks软件.我这里用的是Ubuntu做测试</h4><p><img src="../../../../images/localss.png" alt=""><br>配置如下:</p><ul><li>服务器地址 填入步骤1的网页地址</li><li>服务器端口 填入步骤1端口</li><li>密钥 自己的密码</li><li>加密方式 <code>aes-256-cfb</code>,别选错</li><li>其他的默认就行</li></ul><h4 id="2-2-ubuntu下需要使用chrome浏览器"><a href="#2-2-ubuntu下需要使用chrome浏览器" class="headerlink" title="2.2 ubuntu下需要使用chrome浏览器"></a>2.2 ubuntu下需要使用chrome浏览器</h4><p>  安装switchOmega</p><h4 id="2-3-Windows用户可以直接科学上网了"><a href="#2-3-Windows用户可以直接科学上网了" class="headerlink" title="2.3 Windows用户可以直接科学上网了"></a>2.3 Windows用户可以直接科学上网了</h4>]]></content>
+      
+      
+        <tags>
+            
+            <tag> shadowsocks </tag>
+            
+            <tag> 科学上网 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>对于写博客的一些思考</title>
+      <link href="/2017/02/20/%E5%AF%B9%E4%BA%8E%E5%86%99%E5%8D%9A%E5%AE%A2%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%9D%E8%80%83/"/>
+      <content type="html"><![CDATA[<p>  一开始跟着同学使用博客园，后面自己用了csdn，之前写的东西确实太渣。可能是还没有意识到写作博客的意义。</p><a id="more"></a><p>  看了刘未鹏的&lt;&lt;暗时间&gt;&gt;,越来越觉得有必要好好想一想写作blog的意义。<br>  就自己来说，之前的blog都比较水。<br>  存在以下几个问题</p><ul><li><p>内容不完整</p><pre><code>只是把自己的过程写出来，对于这样做可以起到什么效果，某些步骤的关键点在哪里没有具体写开篇没有一个提纲，诸如写清楚需要准备的东西之类。</code></pre></li><li><p>内容表达不简要</p><pre><code>当然这点需要多写，多读。segmentfault 里面有好多教程写的就比较完备也就是在具备可操作性的同时，表达言简意赅。</code></pre></li><li><p>内容比较随意</p><pre><code>往往是自己有什么想法，没有深思熟虑就写出来，比如hexo的相关问题，其实可以分成几个部分来写。后期完善。</code></pre></li></ul><h2 id="坚持写一个blog-更多的是为了以下几个方面"><a href="#坚持写一个blog-更多的是为了以下几个方面" class="headerlink" title="坚持写一个blog,更多的是为了以下几个方面"></a>坚持写一个blog,更多的是为了以下几个方面</h2><ul><li>用博客来记录自己的思考<br>时间长了，可以作为纵向比较来评判自己的认识水平</li><li>教比学好<br>写教程的时候会尽量把一件事情写清楚。可能自己会操作了，但是有些模糊的步骤时间长了，自己也会忘。也就是把模糊意识里面的东西变成显意识。</li><li>用来结实志同道合的博友<br>这点我还需要积累，毕竟博客的质量还需要提高</li></ul><h2 id="参考博文"><a href="#参考博文" class="headerlink" title="参考博文"></a>参考博文</h2><blockquote><p><a href="http://mindhacks.cn/2009/02/15/why-you-should-start-blogging-now/" target="_blank" rel="noopener">为什么你应该（从现在开始就）写博客</a></p></blockquote>]]></content>
+      
+      
+        <tags>
+            
+            <tag> 生活 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>你叫圆叶椒草</title>
+      <link href="/2017/02/19/%E4%BD%A0%E5%8F%AB%E5%9C%86%E5%8F%B6%E6%A4%92%E8%8D%89/"/>
+      <content type="html"><![CDATA[<p>  今天从好友手中得到了这盆小草.适合放在电脑旁,累了就看一眼.</p><a id="more"></a><p><img src="../../../../images/IMG_20170218_234359.jpg" alt=""></p><h3 id="这是你的习性"><a href="#这是你的习性" class="headerlink" title="这是你的习性"></a>这是你的习性</h3><p>圆叶椒草有较强的耐阴能力，太强的阳光直射对植株的生长很不利。对空气湿度要求不高，能忍受居室干燥的环境。对空气湿度要求不是很高，能在干燥的居室内正常生长，经常用与室温相近的水向植株喷洒，可使植株生长繁茂，叶色油绿光亮，更具生机。</p><p>圆叶椒草生长适温20 ℃至30℃，在此条件下保持盆土湿润而不积水，注意浇水宁少勿多，以免因土壤积水引起根部腐烂。春、夏、秋三季要适当遮光，太强的光线对植株生长不利，有时强烈的直摄阳光还会灼伤叶片，而光线过弱，又会使叶片颜色变淡，失去那种碧绿光亮的色彩。</p><p>圆叶椒草生长期每2周至3周施一次腐熟的稀薄液肥或观叶植物专用肥。冬季要尽量多接受阳光的照射，停止施肥，严格控制浇水，维持10℃以上的室温。</p><p>圆叶椒草栽培中每1年至2年的春季换盆一次，盆土要求疏松透气，含有丰富的腐殖质，排水性良好。可用腐叶土或泥炭土、腐熟的马粪或牛粪加少量的珍珠岩或粗沙、蛭石混匀后配制，并用大而浅的花盆栽种，以利排水</p><h3 id="我会好好照顾你的"><a href="#我会好好照顾你的" class="headerlink" title="我会好好照顾你的!"></a>我会好好照顾你的!</h3>]]></content>
+      
+      
+        <tags>
+            
+            <tag> 生活 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>简单使用github ssh key 免gitpush 输入密码</title>
+      <link href="/2017/02/14/%E7%AE%80%E5%8D%95%E4%BD%BF%E7%94%A8github-ssh-key-%E5%85%8Dgitpush-%E8%BE%93%E5%85%A5%E5%AF%86%E7%A0%81/"/>
+      <content type="html"><![CDATA[<p>  使用git来管理仓库的时候，如果仓库地址是https形式，每次提交，需要输入密码<br>  现在使用ssh方式提交，免去输密码的步骤. hexo 提交同样适用.<br><a id="more"></a></p><h1 id="包括三部分"><a href="#包括三部分" class="headerlink" title="包括三部分"></a>包括三部分</h1><ul><li>产生一个新的 <code>ssh key</code>，</li><li>添加 <code>ssh key</code> 到 <code>ssh-agent</code> </li><li>添加<code>ssh-key</code>到<code>github</code>账户</li></ul><h1 id="1-生成一个新的ssh-key"><a href="#1-生成一个新的ssh-key" class="headerlink" title="1.生成一个新的ssh-key"></a>1.生成一个新的ssh-key</h1><p>   1-1. 在这里默认没有生成过ssh-key<br>   1-2. 在终端中输入<br>   <code>ssh-keygen -t rsa -b 4096 -C &quot;your_email@example.com&quot;</code><br>   之后一路回车即可<br>   <img src="../../../../images/ssh-key-n.PNG" alt=""></p><h1 id="2-添加-ssh-key-到-ssh-agent"><a href="#2-添加-ssh-key-到-ssh-agent" class="headerlink" title="2.添加 ssh key 到 ssh-agent"></a>2.添加 <code>ssh key</code> 到 <code>ssh-agent</code></h1><p>   <code>eval $(ssh-agent -s)</code></p><p>   之后</p><p>   <code>ssh-add ~/.ssh/id_rsa</code></p><p>   <img src="../../../../images/add-ssh-agent.PNG" alt=""><br>   之后在<code>~/.ssh/</code>目录下会有几个文件生成，我们需要用到的是<code>id_rsa.pub</code><br>   可以使用<code>cat id_rsa.pub</code>将其输出出来，方便复制.</p><h1 id="3-添加ssh-key到github账户"><a href="#3-添加ssh-key到github账户" class="headerlink" title="3.添加ssh-key到github账户"></a>3.添加ssh-key到github账户</h1><p>   首先登陆<code>github</code>，找到<code>settings</code>里面<code>SSH and GPG keys</code><br>   <img src="../../../../images/git-ssh-key.PNG" alt=""><br>   之后点击<code>New SSH key</code>，<code>Title</code>自己随意填写.<br>   把<code>id_rsa.pub</code>里面的内容复制到<code>key</code>里面就行了</p><p>   添加完成后可以使用<br>   <code>ssh -T git@github.com</code>测试</p>   <figure class="highlight plain"><figcaption><span>MINGW64 ~/.ssh</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ssh -T git@github.com</span><br><span class="line">Hi bmyell! You&apos;ve successfully authenticated, but GitHub does not provide shell access.</span><br></pre></td></tr></table></figure><p>至此<code>ssh-key</code>就生效了。</p><h1 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h1><blockquote><p><a href="https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/" target="_blank" rel="noopener">官方文档</a></p></blockquote>]]></content>
+      
+      
+        <tags>
+            
+            <tag> github </tag>
+            
+            <tag> ssh key </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>hexo同时部署到gitpages和腾讯云主机</title>
+      <link href="/2017/02/12/hexo%E5%90%8C%E6%97%B6%E9%83%A8%E7%BD%B2%E5%88%B0gitpages%E5%92%8C%E8%85%BE%E8%AE%AF%E4%BA%91%E4%B8%BB%E6%9C%BA/"/>
+      <content type="html"><![CDATA[<p>  之前购买了腾讯云主机,安装了ubuntu 系统,现在想把github上的hexo博客同步到国内的腾讯云主机,提高国内的访问速度.</p><a id="more"></a><h1 id="1-首先是整个思路的介绍"><a href="#1-首先是整个思路的介绍" class="headerlink" title="1.首先是整个思路的介绍"></a>1.首先是整个思路的介绍</h1><pre><code>(这里非常感谢后面参考的一篇blog)</code></pre><p>   看下面的架构图<br>   <img src="../../../../images/scheme.png" alt=""><br>   其实就是用hexo将本地的*.md渲染成静态文件,然后Git推送到服务器的仓库,和搭建好的gitpages.<br>   服务器再通过git-hooks同步网站根目录.<br>   每次deploy 同时推送到两个仓库；再使用腾讯云的<code>dnspod</code><br>   分流.使国内ip可以访问国内服务器,国外ip访问gitpage(可能没有国外ip访问…)</p><h1 id="2-整个流程"><a href="#2-整个流程" class="headerlink" title="2.整个流程"></a>2.整个流程</h1><h4 id="服务器环境搭建-包括创建-git-用户-安装git-githooks配置-和nginx配置"><a href="#服务器环境搭建-包括创建-git-用户-安装git-githooks配置-和nginx配置" class="headerlink" title="- 服务器环境搭建,包括创建 git 用户,安装git,githooks配置 和nginx配置"></a>- 服务器环境搭建,包括创建 <code>git</code> 用户,安装<code>git</code>,<code>githooks</code>配置 和<code>nginx</code>配置</h4><h4 id="github的-gitpage设置-以及添加一个ssh-key"><a href="#github的-gitpage设置-以及添加一个ssh-key" class="headerlink" title="- github的 gitpage设置,以及添加一个ssh-key"></a>- <code>github</code>的 <code>gitpage</code>设置,以及添加一个<code>ssh-key</code></h4><h4 id="本地的hexo-初始化-包括安装-Nodejs-hexo-cli-生成本地静态博客"><a href="#本地的hexo-初始化-包括安装-Nodejs-hexo-cli-生成本地静态博客" class="headerlink" title="- 本地的hexo 初始化,包括安装 Nodejs, hexo-cli,生成本地静态博客"></a>- 本地的<code>hexo</code> 初始化,包括安装 <code>Nodejs</code>, <code>hexo-cli</code>,生成本地静态博客</h4><h4 id="设置git自动化部署发布博客"><a href="#设置git自动化部署发布博客" class="headerlink" title="- 设置git自动化部署发布博客"></a>- 设置<code>git</code>自动化部署发布博客</h4><h4 id="腾讯云的dnspod设置"><a href="#腾讯云的dnspod设置" class="headerlink" title="- 腾讯云的dnspod设置"></a>- 腾讯云的<code>dnspod</code>设置</h4><h1 id="3-腾讯云环境搭建"><a href="#3-腾讯云环境搭建" class="headerlink" title="3.腾讯云环境搭建"></a>3.腾讯云环境搭建</h1><h2 id="3-1安装git"><a href="#3-1安装git" class="headerlink" title="3.1安装git"></a>3.1安装<code>git</code></h2><p>   <code>sudo apt-get install git</code></p><h2 id="添加git用户"><a href="#添加git用户" class="headerlink" title="添加git用户"></a>添加<code>git用户</code></h2><p>   <code>sudo adduser git</code></p><h2 id="切换到git用户下"><a href="#切换到git用户下" class="headerlink" title="切换到git用户下"></a>切换到git用户下</h2><p> <code>su git</code><br>  确保所有操作相关的文件属于git用户<br>  添加 ssh  并测试<br>     cd ~<br>     一般没有.ssh文件夹,现在需要添加<br>     <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">su git</span><br><span class="line">mkdir ~/.ssh</span><br><span class="line">vim ~/.ssh/authorized_keys</span><br><span class="line">#然后将电脑中执行 cat ~/.ssh/id_rsa.pub | pbcopy ,将公钥复制粘贴到authorized_keys</span><br><span class="line">chmod 600 ~/.ssh/authorzied_keys</span><br><span class="line">chmod 700 ~/.ssh</span><br></pre></td></tr></table></figure></p><p>  然后就可以执行ssh命令测试是否可以免密登录</p><p>  <code>ssh -v git@server</code>    </p><h2 id="创建git仓库"><a href="#创建git仓库" class="headerlink" title="创建git仓库"></a>创建git仓库</h2>   <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">su git</span><br><span class="line">cd ~</span><br><span class="line">git init --bare blog.git</span><br></pre></td></tr></table></figure><h2 id="使用githook来同步网站根目录"><a href="#使用githook来同步网站根目录" class="headerlink" title="使用githook来同步网站根目录"></a>使用githook来同步网站根目录</h2><p>   在这里使用<code>post-receive</code>这个钩子，单git有收发的时候就会调用这个钩子。在<code>~/blog.git</code>裸库的<code>hooks</code>文件夹中，新建<code>post-receive</code>文件。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vim ~/blog.git/hooks/post-receive</span><br><span class="line"></span><br><span class="line">#!/bin/bash</span><br><span class="line">git  --work-tree=/var/www/hexo --git-dir=~/blog.git checkout -f</span><br></pre></td></tr></table></figure></p><p>保存后，要赋予这个文件可执行的权限</p><p> <code>chmod +x post-receive</code></p><h1 id="3-2安装并配置nginx来达到访问目的"><a href="#3-2安装并配置nginx来达到访问目的" class="headerlink" title="3.2安装并配置nginx来达到访问目的"></a>3.2安装并配置<code>nginx</code>来达到访问目的</h1><h2 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h2><p>  简单的方式<br>  <code>sudo apt-get install nginx</code><br>  也可以下载源码包编译安装</p><h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>  这里我使用的方法虽然有效，但是比较暴力。<br>  在<code>/etc/nginx/conf.d/</code>目录下<br>  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">vim myblog.conf</span><br><span class="line">server &#123;</span><br><span class="line">        listen 80 default_server;  # 服务器配置端口，不修改</span><br><span class="line">        #listen [::]:80 default_server;</span><br><span class="line">        root /var/www/hexo/;  # 文件路径，改成你需要设置的路径</span><br><span class="line">        # Add index.php to the list if you are using PHP</span><br><span class="line">        index index.html index.htm index.nginx-debian.html;</span><br><span class="line">        server_name 115.159.108.204;  # ip地址，也可以是域名。</span><br><span class="line">        location / &#123;</span><br><span class="line">                # First attempt to serve request as file, then</span><br><span class="line">                # as directory, then fall back to displaying a 404.</span><br><span class="line">                try_files $uri $uri/ =404;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p><p> 之后在<code>/etc/nginx/sites-enabled</code>目录下先把<code>default</code>文件移走，备份后<br> 删除掉这个文件</p><p><code>nginx -s reload#重新载入配置文件</code></p><p>重启<code>nginx</code>即可</p><h1 id="4-本地的hexo-初始化-包括安装-Nodejs-hexo-cli-生成本地静态博客"><a href="#4-本地的hexo-初始化-包括安装-Nodejs-hexo-cli-生成本地静态博客" class="headerlink" title="4.本地的hexo 初始化,包括安装 Nodejs, hexo-cli,生成本地静态博客"></a>4.本地的<code>hexo</code> 初始化,包括安装 <code>Nodejs</code>, <code>hexo-cli</code>,生成本地静态博客</h1><h2 id="4-1-初始化Hexo博客"><a href="#4-1-初始化Hexo博客" class="headerlink" title="4.1 初始化Hexo博客"></a>4.1 初始化Hexo博客</h2><p>   首先要安装 <code>hexo-cli</code>，安装<code>hexo-cli</code> 需要 <code>root</code> 权限，使用 sudo 运行<br>   <code>sudo npm install -g hexo-cli</code></p><p>   然后初始化Hexo程序</p><pre><code><figure class="highlight plain"><figcaption><span>~/Documents/code</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hexo init blog</span><br></pre></td></tr></table></figure></code></pre><p>   等执行成功以后安装两个插件,<code>hexo-deployer-git</code> 和 <code>hexo-server</code> ,这俩插件的作用分别是使用Git自动部署，和本地简单的服务器。<br>   <figure class="highlight plain"><figcaption><span>blog</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br><span class="line">npm install hero-server</span><br></pre></td></tr></table></figure></p><p>   4-2. 生成自己的第一篇文章 hello world !<br>   使用 hexo new &lt;文章名称&gt; 来新建文章，该命令会成成一个 .md文件放置在 sources/_posts文件夹。<br>   hexo new “hello Hexo”<br>                     vim sources/_posts/hello-hexo.md<br>                     编辑完毕以后， 使用hexo g将 .md文件渲染成静态文件，然后启动hexo-server：<br>                     hexo g<br>                     hexo server<br>                     现在便可以打开浏览器访问 <a href="http://localhost:4000" target="_blank" rel="noopener">http://localhost:4000</a> 来查看我们的博客了！</p><pre><code>5. 自动化部署5-1：服务器上建立git裸库创建一个裸仓库，裸仓库就是只保存git信息的Repository, 首先切换到git用户确保git用户拥有仓库所有权一定要加 --bare，这样才是一个裸库。su gitcd ~git init --bare blog.git</code></pre><h1 id="本地操作"><a href="#本地操作" class="headerlink" title="本地操作"></a>本地操作</h1><h2 id="修改原来的git提交方式为ssh"><a href="#修改原来的git提交方式为ssh" class="headerlink" title="修改原来的git提交方式为ssh"></a>修改原来的git提交方式为ssh</h2><h2 id="添加自己主机的仓库"><a href="#添加自己主机的仓库" class="headerlink" title="添加自己主机的仓库"></a>添加自己主机的仓库</h2><p>   修改<code>_config.yml</code>，找到<code>deploy:</code>的地方，把那一段代码修改<br>   比如我的<br>   <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- type: git</span><br><span class="line">  repo: git@github.com:bmyell/bmyell.github.io.git #gitpage地址</span><br><span class="line">  branch: master</span><br><span class="line">- type: git</span><br><span class="line">  repo: git@115.159.108.204:/home/git/blog.git     #腾讯云服务器地址</span><br><span class="line">  branch: master</span><br></pre></td></tr></table></figure></p><h2 id="可以更新博文"><a href="#可以更新博文" class="headerlink" title="可以更新博文"></a>可以更新博文</h2><p>   执行;<br>   <figure class="highlight plain"><figcaption><span>c</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure></p><h1 id="5-使用域名解析服务分流"><a href="#5-使用域名解析服务分流" class="headerlink" title="5.使用域名解析服务分流"></a>5.使用域名解析服务分流</h1><p>  <img src="../../../../images/dnspod.PNG" alt=""><br>  这里修改解析到GitHub Pages 的记录<code>线路类型</code>改成<code>国外</code>,增加解析到腾讯云服务器ip地址的记录.</p><h1 id="参考博文"><a href="#参考博文" class="headerlink" title="参考博文"></a>参考博文</h1><blockquote><p><a href="https://segmentfault.com/a/1190000005723321" target="_blank" rel="noopener">阿里云vps搭建自己的hexo博客</a><br><a href="https://munen.cc/tech/coding-pages.html" target="_blank" rel="noopener">在 GITHUB 和 CODING 上同步托管 HEXO 博客</a></p></blockquote>]]></content>
+      
+      
+        <tags>
+            
+            <tag> hexo </tag>
+            
+            <tag> ubuntu </tag>
+            
+            <tag> gitpage </tag>
+            
+            <tag> nginx </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>ubuntu为Intellij Idea 创建启动图标</title>
+      <link href="/2017/02/09/ubuntu%E4%B8%BAIntellij-Idea-%E5%88%9B%E5%BB%BA%E5%90%AF%E5%8A%A8%E5%9B%BE%E6%A0%87/"/>
+      <content type="html"><![CDATA[<p>  在ubuntu环境下使用<code>Intellij Idea</code>,体验还是不错的.比较难受的是没有桌面启动快捷方式.通过查找资料,解决方案如下.<br><a id="more"></a><br>  一般情况下,Ubuntu将自动安装的软件快捷方式保存在<code>/user/share/application</code>目录下.<br>  <img src="../../../../images/ideanotfound.png" alt=""><br>  经过搜索我的目录里面没有启动<code>Intellij</code>的相关文件.<br>  而且在终端中可以看到该目录下所有文件都是<code>*.desktop</code><br>  <img src="../../../../images/alotdesktop.png" alt=""><br>  所以需要创建同样的文件.</p>  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo vim idea.desktop</span><br></pre></td></tr></table></figure><p>  在文件里面添加以下内容</p>  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[Desktop Entry]</span><br><span class="line">Name=IntelliJ IDEA</span><br><span class="line">Comment=IntelliJ IDEA</span><br><span class="line">Exec=/home/rider/Documents/idea-IU-162.2228.15/bin/idea.sh</span><br><span class="line">Icon=/home/rider/Documents/idea-IU-162.2228.15/bin/idea.png</span><br><span class="line">Terminal=false</span><br><span class="line">Type=Application</span><br><span class="line">Categories=Developer;</span><br></pre></td></tr></table></figure><p>  上述内容需要改的有<br>  <code>Exec</code>指定启动的文件,需要绝对路径<br>  <code>Icon</code>指定启动软件的图标,需要绝对路径<br>  以下是创建之后<br>  <img src="../../../../images/foundidea.png" alt=""><br>  还会生成一个同名的文件,没有图标,点击显示启动错误.这里直接<br>  之后双击有图标的那个就行,不影响使用<br>  <img src="../../../../images/ideaInlancher.png" alt=""><br>  此时,锁定到侧边栏即可</p>]]></content>
+      
+      
+        <tags>
+            
+            <tag> ubuntu </tag>
+            
+            <tag> Intellij Idea </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>在window下配置latex的若干事</title>
+      <link href="/2016/10/30/%E5%9C%A8window%E4%B8%8B%E9%85%8D%E7%BD%AElatex%E7%9A%84%E8%8B%A5%E5%B9%B2%E4%BA%8B/"/>
+      <content type="html"><![CDATA[<p>在windows下配置一下latex的使用环境，在ubuntu下面虽然也尝试过，但是ubuntu需要安装字体什么的比价麻烦，还是在windows下面。<br><a id="more"></a></p><h5 id="Sublime-Text-TeXLive-Sumatra-PDF"><a href="#Sublime-Text-TeXLive-Sumatra-PDF" class="headerlink" title="Sublime Text + TeXLive + Sumatra PDF"></a>Sublime Text + TeXLive + Sumatra PDF</h5><ul><li>首先是 sublime Text 的packge Contral 的配置<br>安装一个packgecontronl最好还是直接下载文件<br>`packge</li></ul><ul><li>出现 <code>There are no packages available for installation</code>的解决办法<br><a href="http://stackoverflow.com/questions/25105139/sublime-text-2-there-are-no-packages-available-for-installation" target="_blank" rel="noopener">stackoverflowd的解决办法</a><br>原文的解决方法如下<br>Step 1:<br>Get IPv4 address of sublime.wbond.NET<br>Try this command line on terminal ping sublime.wbond.Net<br>Now you can get IPv4 address of sublime.wbond.net.<br>Step 2:<br>Now open hosts file from C:\Windows\system32\drivers\etc\ folder and add this line (replcae {IPv4 address})<br>{IPv4 address} sublime.wbond.net.<br>All is ok. Let’s play with Package controller.</li></ul><p>也就是获取sublime.wbond.net的ip，再修改host文件。</p><p>路径是<code>C:\Windows\system32\drivers\etc</code><br>修改host文件的内容，在尾行添加<br><code>50.116.34.243       sublime.wbond.net</code><br>本人实际操作的时候，如果直接修改文件内容，再保存，这样系统会提示保存到其他文件夹，而且自己加了.txt的后缀名。所以我采用的方式是复制一份host文件出来到其他文件夹，修改了之后直接覆盖原来的就行。<br>这个时候，再Ctrl+Shift+P 打开package Control：Install Package 就行了。<br><img src="../../../../images/pack.png" alt=""><br>至此可以愉快的使用 <code>Install package</code> 了.</p><ul><li>texlive  sumatra PDF<br>最好还是到官网下载</li></ul><p>`</p>]]></content>
+      
+      <categories>
+          
+          <category> latex </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> latex live </tag>
+            
+            <tag> sublime text3 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>ubuntu设置shadowsocks全局代理</title>
+      <link href="/2016/10/22/ubuntu%E8%AE%BE%E7%BD%AEshadowsocks%E5%85%A8%E5%B1%80%E4%BB%A3%E7%90%86/"/>
+      <content type="html"><![CDATA[<p>  自己之前在window下设置ss全局，基本在浏览器里面可以不需要再设置代理，但是在ubuntu貌似就麻烦一些。<br><a id="more"></a></p><h3 id="首先是基本软件的安装"><a href="#首先是基本软件的安装" class="headerlink" title="首先是基本软件的安装"></a>首先是基本软件的安装</h3><ul><li>pip shadowsocks</li></ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install python-pip</span><br><span class="line">sudo pip install shadowsocks</span><br></pre></td></tr></table></figure><h3 id="建议使用配置文件进行启动shadow"><a href="#建议使用配置文件进行启动shadow" class="headerlink" title="建议使用配置文件进行启动shadow"></a>建议使用配置文件进行启动shadow</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">touch ss.json</span><br></pre></td></tr></table></figure><p>配置文件基本格式<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">&quot;server&quot; : &quot;111.111.111.111&quot;,</span><br><span class="line">&quot;local_address&quot;: &quot;127.0.0.1&quot;,</span><br><span class="line">&quot;server_port&quot; : 222,</span><br><span class="line">&quot;local_port&quot; : 1080,</span><br><span class="line">&quot;password&quot; : &quot;pass&quot;,</span><br><span class="line">&quot;timeout&quot; : 600,</span><br><span class="line">&quot;method&quot; : &quot;aes-256-cfb&quot;,</span><br><span class="line">&quot;fast_open&quot;:false</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p><p>shadowsocks 是走的socks5协议，需要搭配浏览器插件使用，如果想要在系统全局使用，需要使用polipo进行二次转发</p><h3 id="安装polipo"><a href="#安装polipo" class="headerlink" title="安装polipo"></a>安装polipo</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install polipo</span><br></pre></td></tr></table></figure><p>配置<br><code>sudo gedit /etc/polipo/config</code><br>复制文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"># This file only needs to list configuration variables that deviate</span><br><span class="line"># from the default values.  See /usr/share/doc/polipo/examples/config.sample</span><br><span class="line"># and &quot;polipo -v&quot; for variables you can tweak and further information.</span><br><span class="line"></span><br><span class="line">logSyslog = true</span><br><span class="line">logFile = /var/log/polipo/polipo.log</span><br><span class="line"></span><br><span class="line">proxyAddress = &quot;0.0.0.0&quot;</span><br><span class="line"></span><br><span class="line">socksParentProxy = &quot;127.0.0.1:1080&quot;</span><br><span class="line">socksProxyType = socks5</span><br><span class="line"></span><br><span class="line">chunkHighMark = 50331648</span><br><span class="line">objectHighMark = 16384</span><br><span class="line"></span><br><span class="line">serverMaxSlots = 64</span><br><span class="line">serverSlots = 16</span><br><span class="line">serverSlots1 = 32</span><br></pre></td></tr></table></figure></p><h3 id="重启polipo服务"><a href="#重启polipo服务" class="headerlink" title="重启polipo服务"></a>重启polipo服务</h3><p><code>sudo /etc/init.d/polipo restart</code></p><p>测试<br><code>export http_proxy=&quot;http://127.0.0.1:8123/&quot;curl  ifconfig.me</code><br>如果成功就会返回代理服务器地址</p><p><img src="../../../../images/test.png" alt=""></p><h3 id="设置全局代理"><a href="#设置全局代理" class="headerlink" title="设置全局代理"></a>设置全局代理</h3><p>一般是在<code>系统设置-&gt;网络代理-&gt;socks主机-&gt;127.0.0.1:1080</code><br>这样就启用系统全局代理了，一般我们都是配合浏览器使用<br><img src="../../../../images/daili.png" alt=""><br>Chrome:Proxy SwitchyOmega</p><p>如果没有SwithOmega你是用不了网易云音乐的，你是用不了网易云音乐的，你是用不了网易云音乐的！</p><p>也可以写个脚本，开机执行</p><p>`#!/bin/sh</p><p>nohup sslocal -c /file_path/file_name.json &amp;<br><code>添加进开机执行脚本</code>sudo vi /etc/rc.local`</p><p>添加</p><p><code>sudo sh file_path/file_name.sh</code></p><p>下次重启就会自启动了，如果没有自启动，排查下执行路径及权限是否正确，还有1080端口是否被占用,最好是自己配置一个指定端口，默认的1080可能会与其他程序冲突，比如xware,<br>如果与xware冲突，重新配置端口即可解决</p><h3 id="备份问题以及SwitchyOmega"><a href="#备份问题以及SwitchyOmega" class="headerlink" title="备份问题以及SwitchyOmega"></a>备份问题以及SwitchyOmega</h3><p>这个文件最好是自己下载好一个，以及里面的*.bak文件可以备份一下。比如我的一堆文件<br><img src="../../../../images/bf.png" alt="一堆文件"></p>]]></content>
+      
+      <categories>
+          
+          <category> ubuntu </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> ubuntu </tag>
+            
+            <tag> shadowsocks </tag>
+            
+            <tag> fq </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>(转)解决ubuntu 下不能在qt中使用中文输入法问题(fcitx)</title>
+      <link href="/2016/09/25/%E8%BD%AC-%E8%A7%A3%E5%86%B3ubuntu-%E4%B8%8B%E4%B8%8D%E8%83%BD%E5%9C%A8qt%E4%B8%AD%E4%BD%BF%E7%94%A8%E4%B8%AD%E6%96%87%E8%BE%93%E5%85%A5%E6%B3%95%E9%97%AE%E9%A2%98-fcitx/"/>
+      <content type="html"><![CDATA[<p> 在qt里面发现不能使用中文输入法，找到了解决方案<br><a id="more"></a></p><p><a href="http://www.aichengxu.com/view/9759709" target="_blank" rel="noopener">原文链接</a></p><ol><li>安装fcitx-frontend-qt5<br><code>sudo apt-get install fcitx-frontend-qt5</code></li><li>将安装之后的 fcitx-frontend-qt5复制到qt安装目录，使用<br>可用命令dpkg -L 包名看文件安装路径</li></ol><p>　<code>dpkg -L fcitx-frontend-qt5</code></p><ol><li>qt安装目录　</li></ol><ul><li>qt安装目录/Tools/QtCreator/lib/Qt/plugins/platforminputcontext</li><li>qt安装目录/gcc_64/plugins/platforminputcontexts</li></ul><ol><li>注销后重新打开qtcreate 就行了</li></ol>]]></content>
+      
+      <categories>
+          
+          <category> ubuntu </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> ubuntu </tag>
+            
+            <tag> qt </tag>
+            
+            <tag> fcitx </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>Machine Learning with Python(二)</title>
+      <link href="/2016/09/20/Machine-Learning-with-Python-2/"/>
+      <content type="html"><![CDATA[<p> k-近邻分类算法，从文本文件中解析和导入数据<br> 使用<code>matplotlib</code> 创建扩散图，归一化数值</p><a id="more"></a><h3 id="1-K-近邻算法概述-KNN"><a href="#1-K-近邻算法概述-KNN" class="headerlink" title="1. K-近邻算法概述(KNN)"></a>1. K-近邻算法概述(KNN)</h3><ul><li></li></ul>]]></content>
+      
+      <categories>
+          
+          <category> ml </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Python </tag>
+            
+            <tag> machine learning </tag>
+            
+            <tag> K-近邻算法 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>Machine Learning with Python(一)</title>
+      <link href="/2016/09/20/Machine-Learning-with-Python-1/"/>
+      <content type="html"><![CDATA[<p> 从现在开始准备学习一些机器学习的知识，手边有一本机器学习实战，就从这本书开始八</p><a id="more"></a><h3 id="1-为了测试机器学习算法的效果，通常需要两组独立的样本集：训练数据和测试数据。"><a href="#1-为了测试机器学习算法的效果，通常需要两组独立的样本集：训练数据和测试数据。" class="headerlink" title="1. 为了测试机器学习算法的效果，通常需要两组独立的样本集：训练数据和测试数据。"></a>1. 为了测试机器学习算法的效果，通常需要两组独立的样本集：<code>训练数据</code>和<code>测试数据</code>。</h3><ul><li>当机器学习程序开始运行时，使用训练数据作为算法的输入，训练完成之后输入测试数据。</li><li>输入测试样本是并不提供<code>目标变量</code>，由程序决定测试样本属于哪个类别。比较测试样本预测的目标变量和实际的目标变量，就可以得到算法的精确度。</li></ul><h3 id="2-监督学习和无监督学习"><a href="#2-监督学习和无监督学习" class="headerlink" title="2. 监督学习和无监督学习"></a>2. 监督学习和无监督学习</h3><ul><li>监督学习<br>k-近邻算法，朴素贝叶斯，支持向量机，Rider回归，线性回归，Lasso最小回归系数估计，决策树，局部加权线性回归</li><li>无监督学习<br>k-均值算法，最大期望算法，DBSCAN，Parzen窗设计</li></ul><h3 id="3-选择合适的算法"><a href="#3-选择合适的算法" class="headerlink" title="3. 选择合适的算法"></a>3. 选择合适的算法</h3><ul><li>入坑前的两个问题    需要算法完成什么任务；需要收集或者分析的数据是什么</li><li>如果想要预测目标变量的值，监督或者无监督。监督-> 目标变量是离散值：分类算法；目标变量是连续型的值：使用回归算法。<br> 不想预测目标变量的值，可以采取无监督学习算法。</li><li>数据问题，特征值是连续型或是离散型。特征值中是否缺失…</li></ul><h3 id="4-开发机器学习应用的步骤："><a href="#4-开发机器学习应用的步骤：" class="headerlink" title="4. 开发机器学习应用的步骤："></a>4. 开发机器学习应用的步骤：</h3><ul><li>收集数据(初始)</li><li>准备输入数据(保证数据格式)</li><li>分析输入数据(过滤，剔除垃圾数据)</li><li>训练算法(要写算法的地方)</li><li>测试算法 </li><li>使用算法</li></ul>]]></content>
+      
+      <categories>
+          
+          <category> ml </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Python </tag>
+            
+            <tag> machine learning </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>关于hexo搭建的一些问题（有再更）</title>
+      <link href="/2016/09/15/%E5%85%B3%E4%BA%8Ehexo%E6%90%AD%E5%BB%BA%E7%9A%84%E4%B8%80%E4%BA%9B%E9%97%AE%E9%A2%98/"/>
+      <content type="html"><![CDATA[<p>最近在搭建hexo博客，解决了一些问题。看了好多私人博客，良莠不齐。发现还是结合官方文档比较好。<br>果然如高中老师说的，把help文档看懂，你就会了。  </p><a id="more"></a><h3 id="1-官方文档"><a href="#1-官方文档" class="headerlink" title="1.  官方文档"></a>1.  官方文档</h3><ul><li>搭建hexo的<a href="https://hexo.io/zh-cn/docs/" target="_blank" rel="noopener">中文官方教程</a> </li><li>关于 next的主题的设置 官方文档 <a href="https://github.com/iissnan/hexo-theme-next" target="_blank" rel="noopener">git上的next-wiki</a></li><li>提交<a href="http://www.arao.me/2015/hexo-next-theme-optimize-base/" target="_blank" rel="noopener">sitemap的教程</a>，增加多说评论(我生成的一直是乱码提交不了，有时间再调)</li></ul><h3 id="2-搭建"><a href="#2-搭建" class="headerlink" title="2.  搭建"></a>2.  搭建</h3><ul><li>ubuntu下搭建，就需要对node.js源码包进行编译和安装<a href="http://nodejs.cn/" target="_blank" rel="noopener">网址</a><br>下载好后，执行   <pre><code>sudo npm install hexo-cli -g</code></pre>这样，hexo就装好了（针对在win下已经实现hexo init初始化），在文件夹下<br>执行            <pre><code>hexo s</code></pre><strong>测试</strong>，在浏览器中访问       <code>127.0.0.1:4000</code></li></ul><h3 id="3-小功能"><a href="#3-小功能" class="headerlink" title="3.小功能"></a>3.小功能</h3><blockquote><p><a href="https://github.com/iissnan/hexo-theme-next/wiki/%E5%8F%8B%E6%83%85%E9%93%BE%E6%8E%A5%E8%AE%BE%E7%BD%AE" target="_blank" rel="noopener">友链设置</a><br><a href="https://github.com/coneycode/hexo-git-backup" target="_blank" rel="noopener">备份问题</a><br><a href="http://www.arao.me/2015/hexo-next-theme-optimize-base" target="_blank" rel="noopener">留言功能</a></p></blockquote><h3 id="4-Markdown语法"><a href="#4-Markdown语法" class="headerlink" title="4.Markdown语法"></a>4.Markdown语法</h3><p><a href="http://wowubuntu.com/markdown/" target="_blank" rel="noopener">半官方文档</a><br><a href="http://www.jianshu.com/p/q81RER" target="_blank" rel="noopener">实用性比较好的文档</a><br>简书的在线预览不错，但是还是想写个本地的预览器(貌似实验楼有教程)</p><ul><li>果然重新写了之前的blog原来的评论就没有了，看来多说比较认html0_O</li></ul>]]></content>
+      
+      <categories>
+          
+          <category> blog </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> hexo </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>生成Agent3.1.1的函数及类调用关系图</title>
+      <link href="/2016/08/18/%E7%94%9F%E6%88%90Agent3-1-1%E7%9A%84%E5%87%BD%E6%95%B0%E5%8F%8A%E7%B1%BB%E8%B0%83%E7%94%A8%E5%85%B3%E7%B3%BB%E5%9B%BE/"/>
+      <content type="html"><![CDATA[<h2 id="对agent3-1-1使用doxygen生成call-graph"><a href="#对agent3-1-1使用doxygen生成call-graph" class="headerlink" title="对agent3.1.1使用doxygen生成call_graph"></a>对agent3.1.1使用doxygen生成call_graph</h2><a id="more"></a><h3 id="官方介绍-‘Doxygen-is-the-de-facto-standard-tool-for-generating-documentation-from-annotated-C-sources-but-it-also-supports-other-popular-programming-languages-such-as-C-Objective-C-C-PHP-Java-Python-IDL-Corba-Microsoft-and-UNO-OpenOffice-flavors-Fortran-VHDL-Tcl-and-to-some-extent-D-’"><a href="#官方介绍-‘Doxygen-is-the-de-facto-standard-tool-for-generating-documentation-from-annotated-C-sources-but-it-also-supports-other-popular-programming-languages-such-as-C-Objective-C-C-PHP-Java-Python-IDL-Corba-Microsoft-and-UNO-OpenOffice-flavors-Fortran-VHDL-Tcl-and-to-some-extent-D-’" class="headerlink" title="官方介绍 ‘Doxygen is the de facto standard tool for generating documentation from annotated C++ sources, but it also supports other popular programming languages such as C, Objective-C, C#, PHP, Java, Python, IDL (Corba, Microsoft, and UNO/OpenOffice flavors), Fortran, VHDL, Tcl, and to some extent D.’"></a>官方介绍 ‘Doxygen is the de facto standard tool for generating documentation from annotated C++ sources, but it also supports other popular programming languages such as C, Objective-C, C#, PHP, Java, Python, IDL (Corba, Microsoft, and UNO/OpenOffice flavors), Fortran, VHDL, Tcl, and to some extent D.’</h3><h3 id="官网"><a href="#官网" class="headerlink" title="官网"></a><a href="http://www.stack.nl/~dimitri/doxygen/manual/starting.html" target="_blank" rel="noopener">官网</a></h3><pre><code>所以在这里使用`doxygen`来生成`agent3.1.1`的函数调用图</code></pre><h3 id="获取方式"><a href="#获取方式" class="headerlink" title="获取方式"></a>获取方式</h3><p> <code>sudo apt-get install doxygen doxygen-doc graphviz</code><br> <code>gtaphviz</code>是为了生成<code>.png</code>格式的图片</p><h3 id="操作过程"><a href="#操作过程" class="headerlink" title="操作过程"></a>操作过程</h3><ol><li>为了生成比较全面的agent2d相关类调用，把librcsc放入球队代码文件夹中。</li><li><code>doxygen -g</code>这个时候目录下就有<code>Doxyfile</code> </li><li><p>对 Doxyfile进行修改 </p><ul><li>在默认情况下，Doxygen会输出HTML和LATEX形式文档，LATEX主要用于生成PDF，这里暂时不需要.<br>所以我们禁用LATEX输出<br>在Doxyfile中将下面一行<br>YES改为NO,之后的有关latex的选项都会被禁用</li></ul><p><code>GENERATE_LATEX = YES</code></p></li></ol><ul><li><p>修改HTML的显示方式，将下面两行<br>改为YES<br><code>DISABLE_INDEX = NO          GENERATE_TREEVIEW = NO</code></p></li><li><p>修改搜索的方式<br>修改为YES，目的是为了递归搜索。<br> <code>RECURSIVE = NO</code></p></li></ul>]]></content>
+      
+      <categories>
+          
+          <category> robocup </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> robocup2d </tag>
+            
+            <tag> doxygen </tag>
+            
+            <tag> agent2d 3.1.1 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>ubuntu连接手机的方法</title>
+      <link href="/2016/07/31/ubuntu%E8%BF%9E%E6%8E%A5%E6%89%8B%E6%9C%BA%E7%9A%84%E6%96%B9%E6%B3%95/"/>
+      <content type="html"><![CDATA[<p>比较无聊。。不过手机连上电脑挺有趣的，毕竟是基于linux的内核，目录树类似，有其它的目录是干啥的，不懂<br><a id="more"></a></p><p>SSHDroid&nbsp;是个SSH&nbsp;Server&nbsp;for&nbsp;Android设备。该应用可以让你通过PC或命令连接android</p><p>Connect&nbsp;through&nbsp;SSH&nbsp;to&nbsp;your&nbsp;device!</p><p>SSHDroid&nbsp;is&nbsp;a&nbsp;SSH&nbsp;server&nbsp;implementation&nbsp;for&nbsp;Android.<br>This&nbsp;application&nbsp;will&nbsp;let&nbsp;you&nbsp;to&nbsp;connect&nbsp;to&nbsp;your&nbsp;device&nbsp;from&nbsp;a&nbsp;PC&nbsp;and&nbsp;execute&nbsp;commands&nbsp;(like&nbsp;”terminal”&nbsp;and&nbsp;”adb&nbsp;shell”)&nbsp;or&nbsp;edit&nbsp;files&nbsp;(through&nbsp;SFTP,&nbsp;WinSCP,&nbsp;Cyberduck,&nbsp;etc…).</p><p>Root&nbsp;is&nbsp;optional（可选的）&nbsp;but&nbsp;not&nbsp;required&nbsp;to&nbsp;run&nbsp;this&nbsp;application.</p><p>&nbsp;</p><p>ubuntu下使用命令（手机和电脑在同一wifi网络下）</p><p>ssh -p 22 <a href="mailto:root@192.168.2.100" target="_blank" rel="noopener">root@192.168.2.100</a>（这个是手机的ip地址）</p><p>password：admin</p>]]></content>
+      
+      <categories>
+          
+          <category> ubuntu </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> ubuntu </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>HDUOJ</title>
+      <link href="/2016/07/31/hduoj/"/>
+      <content type="html"><![CDATA[<h3 id="大神们总结的题，适用于HDUOJ"><a href="#大神们总结的题，适用于HDUOJ" class="headerlink" title="大神们总结的题，适用于HDUOJ"></a>大神们总结的题，适用于HDUOJ</h3><a id="more"></a><p>基础题：1000、1001、1004、1005、1008、1012、1013、1014、1017、1019、1021、1028、1029、1032、1037、1040、1048、1056、1058、1061、1070、1076、1089、1090、1091、1092、1093、1094、1095、1096、1097、1098、1106、1108、1157、1163、1164、1170、1194、1196、1197、1201、1202、1205、1219、1234、1235、1236、1248、1266、1279、1282、1283、1302、1303、1323、1326、1330、1334、1335、1339、1390、1391、1393、1395、1397、1405、1406、1407、1408、1412、1418、1420、1465、1491、1555、1562、1563、1570、1587、1673、1678、1708、1718、1720、1785、1799、1859、1862、1877、1898、1976、1977、1985、1994、2000、2001、2002、2003、2004、2005、2006、2007、2008、2009、2010、2011、2012、2013、2014、2015、2016、2017、2018、2019、2020、2021、2022、2023、2024、2025、2026、2027、2028、2029、2030、2031、2032、2033、2034、2035、2039、2040、2042、2043、2048、2049、2051、2053、2055、2056、2057、2060、2061、2071、2073、2075、2076、2078、2081、2083、2088、2090、2092、2093、2095、2096、2097、2098、2099、2101、2103、2106、2107、2109、2113、2114、2115、2123、2131、2132、2133、2135、2136、2137、2138、2139、2143、2148、2153、2156、2161、2162、2164、2178、2186、2192、2200、2201、2212、2304、2309、2317、2401、2500、2502、2503、2504、2519、2520、2521、2523、2524、2535、2537、2539、2547、2548、2549、2550、2551、2552、2555、2560、2561、2562、2566、2567、2568、2700、2710、</p><p>DP：1003、10240、1029、1069、1074、1087、1114、1159、1160、1171、1176、1203、1231、1257、1260、1284、1421、1789、1978、2059、2084、2159、2191、2544、2571、2602、2709、</p><p>搜索：1010、1015、1016、1026、1072、1075、1175、1180、1181、1238、1239、1240、1241、1242、1253、1254、1312、1372、1548、1597、1671、1677、1728、1800、1983、2102、2141、2553、2563、2605、2612、2614、1616、2717</p><p>贪心：1009、1045、1049、1050、1051、1052、1257、1800、2037、2111、2124、2187、2391、2570</p><p>数学题：1018、1065、1071、1115、1141、1162、1212、1220、1492、1593、1701、1722、1798、1840、1999、2036、2080、2086、2089、2105、2108、2134、2303、2393、2438、2529、2547、2548、2552、2554、2601、2603、2701、</p><p>递推：1133、1143、1207、1249、1267、1284、1290、1297、1396、1992、1995、1996、2013、2014、2044、2045、2046、2047、2050、2064、2065、2067、2068、2070、2077、2085、2151、2154、2160、2190、2501、2512、2563、2569、2709、2716、</p><p>字符串：1020、1039、1043、1062、1073、1075、1088、1113、1161、1200、1251、1256、1288、1321、1328、1379、1804、1860、1982、1984、2017、2024、2025、2026、2027、2043、2052、2054、2072、2074、2087、2131、2137、2140、2163、2203、2206、2352、2500、2549、2564、2565、2567、2572、2609、2607、2707、2708、2719、2721、2723、</p><p>大数：1002、1042、1133、1250、1297、1715、1753、1865、2100、</p><p>胡搞：1022、1027、1030、1035、1128、1165、1209、1210、1215、1222、1228、1229、1230、1237、1259、1276、1286、1337、1342、1361、1370、1506、1577、1597、1702、1716、1727、1868、1870、1896、1981、1986、1987、1988、1997、1998、1999、2058、2062、2089、2090、2094、2104、2116、2117、2135、2175、2183、2184、2197、2303、2368、2370、2374、2511、2522、2527、2600、2615、2703、2711、2714、2715、2725、</p><p>博弈：1077、1404、1517、1524、1525、1527、1536、1564、1729、1730、1846、1847、1848、1849、1850、2147、2149、2176、2177、2188</p><p>母函数：1085、1171、1398、2079、2082、2110、2152、2189、2566、</p><p>hash：1264、1280、1425、1496、1800、2522、2600、</p>]]></content>
+      
+      <categories>
+          
+          <category> 蒜法 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> c++ </tag>
+            
+            <tag> acm </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>学习robocup2d所需的一些资料及技能</title>
+      <link href="/2016/07/29/%E5%AD%A6%E4%B9%A0robocup2d%E6%89%80%E9%9C%80%E7%9A%84%E4%B8%80%E4%BA%9B%E8%B5%84%E6%96%99%E5%8F%8A%E6%8A%80%E8%83%BD/"/>
+      <content type="html"><![CDATA[<h3 id="参考了-MT利鹏学长-的blog"><a href="#参考了-MT利鹏学长-的blog" class="headerlink" title="参考了 MT利鹏学长 的blog"></a>参考了 MT利鹏学长 的<a href="http://baka233.me/2016/05/25/%E5%AD%A6%E4%B9%A0robocup%E6%89%80%E9%9C%80%E8%A6%81%E7%9A%84%E4%B8%80%E4%BA%9B%E6%8A%80%E8%83%BD%E4%BB%A5%E5%8F%8A%E8%B5%84%E6%96%99/" target="_blank" rel="noopener">blog</a></h3><h3 id="有补充和调整"><a href="#有补充和调整" class="headerlink" title="有补充和调整"></a>有补充和调整</h3><h3 id="从wordpress到hexo，这是第一篇blog，顺便学习下"><a href="#从wordpress到hexo，这是第一篇blog，顺便学习下" class="headerlink" title="从wordpress到hexo，这是第一篇blog，顺便学习下"></a>从wordpress到hexo，这是第一篇blog，顺便学习下</h3><h3 id="markdown的语法，蛤蛤。"><a href="#markdown的语法，蛤蛤。" class="headerlink" title="markdown的语法，蛤蛤。"></a>markdown的语法，蛤蛤。</h3><a id="more"></a><h1 id="资料："><a href="#资料：" class="headerlink" title="资料："></a>资料：</h1><p>robocup世界杯官网：<a href="http://www.robocup.org/" target="_blank" rel="noopener">http://www.robocup.org/</a></p><p>2D联盟：<a href="http://wiki.robocup.org/wiki/Soccer_Simulation_League" target="_blank" rel="noopener">http://wiki.robocup.org/wiki/Soccer_Simulation_League</a></p><p>平台软件下载(官方)：<a href="http://sourceforge.net/projects/sserver" target="_blank" rel="noopener">http://sourceforge.net/projects/sserver</a></p><p>科大蓝鹰官网：<a href="http://ai.ustc.edu.cn/2d/" target="_blank" rel="noopener">http://ai.ustc.edu.cn/2d/（多年的世界第一，全球最先进的资料都在这里）</a></p><p>日本HELIOS官网：<a href="http://osdn.jp/projects/rctools/" target="_blank" rel="noopener">http://osdn.jp/projects/rctools/（全球大多数球队的底层）</a></p><p>中国机器人：<a href="http://www.rcccaa.org/" target="_blank" rel="noopener">http://www.rcccaa.org/（15国赛公布网站）</a></p><p>知网空间：<a href="http://www.cnki.com.cn/Article/CJFDTOTAL-XXWX201103027.htm" target="_blank" rel="noopener">http://www.cnki.com.cn/Article/CJFDTOTAL-XXWX201103027.htm （很多专业的期刊）</a></p><p>德克萨斯A&amp;M大学的关于robocup的教程：<a href="http://www.cs.utexas.edu/~todd/cs344m/resources/" target="_blank" rel="noopener">http://www.cs.utexas.edu/~todd/cs344m/resources/（很经典，特别是week 5，但是需要英语阅读能力）</a></p><p><a href="http://chaosscripting.net/files/competitions/RoboCup" target="_blank" rel="noopener">http://chaosscripting.net/files/competitions/RoboCup (历年<br>比赛一些源码录像的收集)</a></p><p><a href="http://www.chaosscripting.net/demo/" target="_blank" rel="noopener">http://www.chaosscripting.net/demo/</a><br> 可以看到优雅的2D</p><p><a href="http://chaosscripting.net/files/competitions/RoboCup" target="_blank" rel="noopener">http://www.oxsy.ro/blog/ (Oxsy球队的官网，这位大叔完全自己从零开始搞了15年的2d。是目前唯一一位在职的2d人</a></p><p><a href="http://www.prokopenko.net/publications-RoboCup.html" target="_blank" rel="noopener">http://www.prokopenko.net/publications-RoboCup.html</a> （2016年的世界冠军队伍，悉尼大学的教授搞个人主页）<br><a href="http://www.oliverobst.eu" target="_blank" rel="noopener">http://www.oliverobst.eu</a>（2016年的世界冠军队伍，悉尼大学的教授搞的一只队伍）</p><p><a href="http://www.utexas.edu/search/results?query=robocup2d" target="_blank" rel="noopener">德克萨斯大学奥斯汀分校</a></p><p><a href="http://suanfazu.com/" target="_blank" rel="noopener">算法组</a>(有时候也需要一些强大的资源)<br><a href="http://book.douban.com/subject/1230487/" target="_blank" rel="noopener">《人工智能:一种现代方法》</a></p><p>Peter Norvig//Stuart Russell人民邮电出版社<br><a href="http://movie.douban.com/subject/1306029/" target="_blank" rel="noopener">《美丽心灵 A Beautiful Mind》</a> 关于20世纪伟大数学家小约翰•福布斯-纳什的人物传<br>记片。</p><p><a href="https://www.researchgate.net/" target="_blank" rel="noopener">https://www.researchgate.net/</a>一个不错的论文搜索网址</p><h1 id="技能"><a href="#技能" class="headerlink" title="技能"></a>技能</h1><p>1、深厚的c、c++编程基础<br>要求：熟练掌握c的指针机制，c++的STL，这一点尤其重要。<br>2、机器学习的一些理论知识<br>可以到 coursera 上搜 <a href="https://www.coursera.org/learn/machine-learning" target="_blank" rel="noopener">machine learning</a> </p><h1 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h1><p>某些资料：成绩比较好的队伍的历年TDP和论文<br>• 独立的发现问题并解决问题<br>• 高质量的工程实现<br>• 这是重中之重！说的天花乱坠，最重要的还是要落实<br>到代码上去！<br>• 理论思维和实践思维之间偏重实践思维</p>]]></content>
+      
+      <categories>
+          
+          <category> blog </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> robocup2d </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>matalab 如何敲出常用数学符号</title>
+      <link href="/2016/05/25/matalab%20%E5%A6%82%E4%BD%95%E6%95%B2%E5%87%BA%E5%B8%B8%E7%94%A8%E6%95%B0%E5%AD%A6%E7%AC%A6%E5%8F%B7/"/>
+      <content type="html"><![CDATA[<p>在matlab中敲出一些特殊的符号<br><a id="more"></a><br>下标用 _(下划线)<br>希腊字母等特殊字符用 \加拼音 如<br>α \alpha<br>β \beta<br>γ \gamma<br>θ \theta<br>Θ \Theta<br>Г \Gamma<br>δ \delta<br>Δ \Delta<br>ξ \xi<br>Ξ \Xi<br>η \elta<br>ε \epsilong<br>ζ \zeta<br>μ \miu<br>υ \nu<br>τ \tau<br>λ \lamda<br>∧ \Lamda<br>π \pi<br>∏ \Pi<br>σ \sigma<br>∑ \Sigma<br>φ \phi<br>Φ \Phi<br>ψ \psi<br>Ψ \Psi<br>χ \chi<br>ω \ommiga<br>Ω \Ommiga<br>&lt; \leq &gt; \geq<br>不等于 \neq<br>&lt;&lt; \ll &gt;&gt; \gg<br>正负 \pm<br>左箭头 \leftarrow<br>右箭头 \rightarrow<br>上箭头 \uparrow<br>例 text(2,3,’\alpha_2^\beta’)<br>注： 可用{}把须放在一起的括起来<br>Matlab图形中允许用TEX文件格式来显示字符。使用\bf，\it，\rm表示黑体，斜体，正体字符，特别注意大括号{ }的用法。</p>]]></content>
+      
+      <categories>
+          
+          <category> matlab </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> matlab </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>ubuntu 设置 目录文件名为 英文</title>
+      <link href="/2016/03/23/ubuntu%20%E8%AE%BE%E7%BD%AE%20%E7%9B%AE%E5%BD%95%E6%96%87%E4%BB%B6%E5%90%8D%E4%B8%BA%20%E8%8B%B1%E6%96%87/"/>
+      <content type="html"><![CDATA[<p>为了使用起来方便，装了ubuntu中文版，自然在home文件里用户目录的“桌面”、“图片”、“视频”、“音乐”……都是中文的。设置为英文<br><a id="more"></a><br>很多时候都喜欢在桌面上放一些要操作的文件，linux里命令行操作又多，难免会用命令行操作桌面上的东西，那么就要 “cd 桌面”，打“桌面”的时候要输入法切换，麻烦……所以就想办法把用户目录下的路径改成英文，而其他的中文不变，方法如下：</p><h2 id="方法1-打开终端，在终端中输入命令"><a href="#方法1-打开终端，在终端中输入命令" class="headerlink" title="方法1   打开终端，在终端中输入命令:"></a>方法1   打开终端，在终端中输入命令:</h2><blockquote><p><span style="color: #003300;">export LANG=en_US</span></p><p><span style="color: #003300;">xdg-user-dirs-gtk-update</span><br>跳出对话框询问是否将目录转化为英文路径,同意并关闭.<br>在终端中输入命令:<br>export LANG=zh_CN<br>关闭终端,并重起.下次进入系统,系统会提示是否把转化好的目录改回中文.选择不再提示,并取消修改.主目录的中文转英文就完成了~</p></blockquote><h2 id="方法二-修改配置文件"><a href="#方法二-修改配置文件" class="headerlink" title="方法二 修改配置文件"></a>方法二 修改配置文件</h2><p>把中文文件夹改成相应的英文文件夹，再修改配置文件</p><blockquote><p><span class="cnblogs_code">vim  ~/.config/user-dirs.dirs</span></p><p><a href="http://115.159.108.204/wp-content/uploads/2016/03/2016-06-18-22-38-26屏幕截图.png" target="_blank" rel="noopener"><img src="http://115.159.108.204/wp-content/uploads/2016/03/2016-06-18-22-38-26屏幕截图-e1466262135944-300x185.png" alt="2016-06-18 22-38-26屏幕截图"></a><br>如图所示，更改相应的路径即可。。</p></blockquote><p>&nbsp;</p><p>重启之后，惊奇的发现 。。HOME之后还是为空。估计是home下面没有 那几个目录了。自己先创建试试。。</p><p>&nbsp;</p><p><a href="http://115.159.108.204/wp-content/uploads/2016/03/2016-06-18-23-07-21屏幕截图.png" target="_blank" rel="noopener"><img src="http://115.159.108.204/wp-content/uploads/2016/03/2016-06-18-23-07-21屏幕截图-e1466262570587-300x191.png" alt="2016-06-18 23-07-21屏幕截图"></a></p><p>改了之后，看下效果。。</p><p><a href="http://115.159.108.204/wp-content/uploads/2016/03/2016-06-18-23-17-33屏幕截图.png" target="_blank" rel="noopener"><img src="http://115.159.108.204/wp-content/uploads/2016/03/2016-06-18-23-17-33屏幕截图-e1466263110741-104x300.png" alt="2016-06-18 23-17-33屏幕截图"></a>可以看到效果不是很</p><p>明显，重启。。</p><p><pre><a href="http://115.159.108.204/wp-content/uploads/2016/03/2016-06-18-23-21-12屏幕截图.png" target="_blank" rel="noopener"><img src="http://115.159.108.204/wp-content/uploads/2016/03/2016-06-18-23-21-12屏幕截图-e1466263442896-97x300.png" alt="2016-06-18 23-21-12屏幕截图"></a><br>结果，中文目录还在，但是英文目录已生成。。</pre><br>&nbsp;</p>]]></content>
+      
+      <categories>
+          
+          <category> ubuntu </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> ubuntu </tag>
+            
+            <tag> shell script </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>cmake 和 make 的区别</title>
+      <link href="/2016/03/07/cmake%E5%92%8Cmake%E7%9A%84%E5%8C%BA%E5%88%AB/"/>
+      <content type="html"><![CDATA[<p>详细教程： <a href="http://www.cnblogs.com/coderfenghc/archive/2013/01/20/2846621.html" target="_blank" rel="noopener">cmake</a> <a href="http://blog.csdn.net/liang13664759/article/details/1771246" target="_blank" rel="noopener">make</a><br><a id="more"></a><br>大家都知道，写程序大体步骤为：</p><p>1.用编辑器编写源代码，如.c文件。</p><p>2.用编译器编译代码生成目标文件，如.o。</p><p>3.用链接器连接目标代码生成可执行文件，如.exe。</p><p>但如果源文件太多，一个一个编译时就会特别麻烦，于是人们想到，为什么不设计一种类似批处理的程序，来批处理编译源文件呢，于是就有了make工具，它是一个自动化编译工具，你可以使用一条命令实现完全编译。但是你需要编写一个规则文件，make依据它来批处理编译，这个文件就是makefile，所以编写makefile文件也是一个程序员所必备的技能。</p><p>对于一个大工程，编写makefile实在是件复杂的事，于是人们又想，为什么不设计一个工具，读入所有源文件之后，自动生成makefile呢，于是就出现了cmake工具，它能够输出各种各样的makefile或者project文件,从而帮助程序员减轻负担。</p><p>但是随之而来也就是编写cmakelist文件，它是cmake所依据的规则。所以在编程的世界里没有捷径可走，还是要脚踏实地的。</p><p><span style="color: #333300;">原文件－－<strong>camkelist</strong> —<strong>cmake</strong> —<strong>makefile</strong> —<strong>make</strong> —生成可执行文件</span></p>]]></content>
+      
+      <categories>
+          
+          <category> c++ </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> make </tag>
+            
+            <tag> cmake </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>模板的继承</title>
+      <link href="/2015/11/28/%E6%A8%A1%E6%9D%BF%E7%9A%84%E7%BB%A7%E6%89%BF/"/>
+      <content type="html"><![CDATA[<p>会用继承，会用一些模板，</p><p>但是模板的继承是什么鬼；<br><a id="more"></a><br>百度如下：</p><p>模板类的继承包括四种：</p><p>1.（普通类继承模板类）</p><div class="cnblogs_code"><br><pre>template&lt;<span style="color: #0000ff;">class</span> T&gt;<br><span style="color: #0000ff;">class</span><span style="color: #000000;"> TBase{<br>    T data;<br>&hellip;&hellip;<br>};<br></span><span style="color: #0000ff;">class</span> Derived:<span style="color: #0000ff;">public</span> TBase&lt;<span style="color: #0000ff;">int</span>&gt;<span style="color: #000000;">{<br>&hellip;&hellip;<br>};</span></pre><br></div><p>2.（模板类继承了普通类（非常常见））</p><div class="cnblogs_code"><br><pre><span style="color: #0000ff;">class</span><span style="color: #000000;"> TBase{<br>&hellip;&hellip;<br>};<br>template</span>&lt;<span style="color: #0000ff;">class</span> T&gt;<br><span style="color: #0000ff;">class</span> TDerived:<span style="color: #0000ff;">public</span><span style="color: #000000;"> TBase{<br>T data;<br>&hellip;&hellip;<br>};</span></pre><br></div><p>3.（类模板继承类模板）</p><div class="cnblogs_code"><br><pre>template&lt;<span style="color: #0000ff;">class</span> T&gt;<br><span style="color: #0000ff;">class</span><span style="color: #000000;"> TBase{<br>T data1;<br>&hellip;&hellip;<br>};<br>template</span>&lt;<span style="color: #0000ff;">class</span> T1,<span style="color: #0000ff;">class</span> T2&gt;<br><span style="color: #0000ff;">class</span> TDerived:<span style="color: #0000ff;">public</span> TBase<t1><span style="color: #000000;">{<br>T2 data2;<br>&hellip;&hellip;<br>};</span></t1></pre><br></div><p>4.（模板类继承类模板，即继承模板参数给出的基类）</p><div class="cnblogs_code"><br><pre>#include<iostream><br><span style="color: #0000ff;">using</span> <span style="color: #0000ff;">namespace</span><span style="color: #000000;"> std;<br><br></span><span style="color: #0000ff;">class</span><span style="color: #000000;"> BaseA{<br></span><span style="color: #0000ff;">public</span><span style="color: #000000;">:<br>    BaseA(){cout</span>&lt;&lt;<span style="color: #800000;">“</span><span style="color: #800000;">BaseA founed</span><span style="color: #800000;">“</span>&lt;&lt;<span style="color: #000000;">endl;}<br>};<br></span><span style="color: #0000ff;">class</span><span style="color: #000000;"> BaseB{<br></span><span style="color: #0000ff;">public</span><span style="color: #000000;">:<br>    BaseB(){cout</span>&lt;&lt;<span style="color: #800000;">“</span><span style="color: #800000;">BaseB founed</span><span style="color: #800000;">“</span>&lt;&lt;<span style="color: #000000;">endl;}<br>};<br>template</span>&lt;typename T, <span style="color: #0000ff;">int</span> rows&gt;<br><span style="color: #0000ff;">class</span><span style="color: #000000;"> BaseC{<br></span><span style="color: #0000ff;">private</span><span style="color: #000000;">:<br>    T data;<br></span><span style="color: #0000ff;">public</span><span style="color: #000000;">:<br>    BaseC():data(rows){<br>        cout</span>&lt;&lt;<span style="color: #800000;">“</span><span style="color: #800000;">BaseC founed </span><span style="color: #800000;">“</span>&lt;&lt; data &lt;&lt;<span style="color: #000000;"> endl;}<br>};<br>template</span>&lt;<span style="color: #0000ff;">class</span> T&gt;<br><span style="color: #0000ff;">class</span> Derived:<span style="color: #0000ff;">public</span><span style="color: #000000;"> T{<br></span><span style="color: #0000ff;">public</span><span style="color: #000000;">:<br>    Derived():T(){cout</span>&lt;&lt;<span style="color: #800000;">“</span><span style="color: #800000;">Derived founed</span><span style="color: #800000;">“</span>&lt;&lt;<span style="color: #000000;">endl;}<br>};<br><br></span><span style="color: #0000ff;">void</span><span style="color: #000000;"> main()<br>{<br>    Derived</span><basea> x;<span style="color: #008000;">//</span><span style="color: #008000;"> BaseA作为基类</span><br>    Derived<baseb> y;<span style="color: #008000;">//</span><span style="color: #008000;"> BaseB作为基类</span><br>    Derived&lt;BaseC&lt;<span style="color: #0000ff;">int</span>, <span style="color: #800080;">3</span>&gt; &gt; z; <span style="color: #008000;">//</span><span style="color: #008000;"> BaseC&lt;int,3&gt;作为基类</span><br>}</baseb></basea></iostream></pre><br></div><p>&nbsp;</p>]]></content>
+      
+      <categories>
+          
+          <category> c++ </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> c++ </tag>
+            
+            <tag> 模板 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>ubuntu14.10 搭建 Robocup 2d 平台</title>
+      <link href="/2015/06/28/ubuntu14.10%20%E6%90%AD%E5%BB%BA%20Robocup%202d%20%E5%B9%B3%E5%8F%B0/"/>
+      <content type="html"><![CDATA[<p>参考了网上的文章，搭建2d平台<br><a id="more"></a><br><span style="font-family: Times New Roman;"><span>Robocup2D</span></span><span><span style="font-family: 宋体;">仿真平台需要运行在类</span><span style="font-family: Times New Roman;">Unix</span><span style="font-family: 宋体;">环境中，因此本例安装</span><span style="font-family: Times New Roman;">Ubuntu</span><span style="font-family: 宋体;">系统。</span><span style="font-family: Times New Roman;">Robocup2D</span><span style="font-family: 宋体;">官方源码主要包含</span><span style="font-family: Times New Roman;">rcssserver</span><span style="font-family: 宋体;">，</span><span style="font-family: Times New Roman;">rcssmonitor</span><span style="font-family: 宋体;">和</span><span style="font-family: Times New Roman;">rcsslogplayer 3</span><span style="font-family: 宋体;">个部分，</span><span style="font-family: Times New Roman;">Server</span><span style="font-family: 宋体;">是总控台，所有信息交互和处理都是在这里进行；</span><span style="color: #000000; font-family: Times New Roman;">Monitor</span><span style="font-family: 宋体;">是监控器，与</span><span style="font-family: Times New Roman;">server</span><span style="font-family: 宋体;">连接，用于模拟显示球场场景；</span><span style="font-family: Times New Roman;">Logplayer</span><span style="font-family: 宋体;">用于回放比赛，演示时可以不用安装。</span><span style="font-family: Times New Roman;">Server</span><span style="font-family: 宋体;">和</span><span style="font-family: Times New Roman;">Monitor</span><span style="font-family: 宋体;">安装好后可以显示球场，球员上场还需要</span><span style="font-family: Times New Roman;">Client</span></span><span style="font-family: 宋体;"><span>端，可以从中科大官网下载他们的源码，直接运行脚本加入球员。</span></span></p><h1 id="1-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-传送门"><a href="#1-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-传送门" class="headerlink" title="1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 传送门"></a><span style="font-family: Times New Roman;"><span>1</span><span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span>传送门</span></span></h1><p><span style="font-family: Times New Roman;"><span>Robocup2D</span></span><span><span style="font-family: 宋体;">仿真机器人足球官网：</span></span><a href="http://www.robocup.org/robocup-soccer/simulation/" target="_blank" rel="noopener"><span style="font-family: Times New Roman;"><span style="color: #0000ff;"><span style="text-decoration: underline;">http://www.robocup.org/robocup-soccer/simulation/</span></span></span></a></p><p><span style="font-family: 宋体;"><span>官方介绍（包含后面两个链接）：</span></span><a href="http://sourceforge.net/apps/mediawiki/sserver/index.php?title=Main_Page" title="Main_Page" target="_blank" rel="noopener"><span style="font-family: Times New Roman;"><span style="color: #0000ff;"><span style="text-decoration: underline;">http://sourceforge.net/apps/mediawiki/sserver/index.php?title=Main_Page</span></span></span></a></p><p><span style="font-family: 宋体;"><span>官方源文件：</span></span><a href="http://sourceforge.net/projects/sserver/files/" target="_blank" rel="noopener"><span style="font-family: Times New Roman;"><span style="color: #0000ff;"><span style="text-decoration: underline;">http://sourceforge.net/projects/sserver/files/</span></span></span></a></p><p><span style="font-family: 宋体;"><span>官方安装方法：</span></span><a href="http://sourceforge.net/apps/mediawiki/sserver/index.php?title=Installing_server_server_system" title="Installing_server_server_system" target="_blank" rel="noopener"><span style="font-family: Times New Roman;"><span style="color: #0000ff;"><span style="text-decoration: underline;">http://sourceforge.net/apps/mediawiki/sserver/index.php?title=Installing_server_server_system</span></span></span></a></p><p><span style="font-family: 宋体;"><span>中科大公布源码:<a href="http://www.wrighteagle.org/2d/" target="_blank" rel="noopener"><span style="color: #0000ff; font-family: Times New Roman;"><span style="text-decoration: underline;">http://www.wrighteagle.org/2d/</span></span></a></span></span></p><p>&nbsp;</p><h1 id="2-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-安装及配置UNIX环境（此处省略很多字）"><a href="#2-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-安装及配置UNIX环境（此处省略很多字）" class="headerlink" title="2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 安装及配置UNIX环境（此处省略很多字）"></a><span style="font-family: Times New Roman;"><span>2</span><span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span>安装及配置</span></span><span><span style="font-family: Times New Roman;">UNIX</span></span><span style="font-family: 宋体;"><span>环境</span></span>（此处省略很多字）</h1><h2 id="调出终端模拟器"><a href="#调出终端模拟器" class="headerlink" title="调出终端模拟器"></a><span style="font-family: 宋体;"><span><span>调出终端模拟器</span></span></span></h2><p><span style="font-family: 宋体;"><span>方法一（</span></span><span><span style="font-family: Times New Roman;">GUI</span><span style="font-family: 宋体;">）：在</span><span style="font-family: Times New Roman;">Ubuntu</span><span style="font-family: 宋体;">的</span><span style="font-family: Times New Roman;">Dash home</span><span style="font-family: 宋体;">（左上角）中找到</span><span style="font-family: Times New Roman;">Terminal</span></span><span style="font-family: 宋体;"><span>，启动。</span></span></p><p>&nbsp;</p><p><span style="font-family: 宋体;"><span>方法二（</span></span><span><span style="font-family: Times New Roman;">CLI</span><span style="font-family: 宋体;">）：</span><span style="font-family: Times New Roman;">Ctrl+Alt+F1~F6</span><span style="font-family: 宋体;">启动命令行界面，</span><span style="font-family: Times New Roman;">Ctrl+Alt+F7</span></span><span style="font-family: 宋体;"><span>重新回到图形界面。</span></span></p><p><span style="font-family: 宋体;"><span style="font-family: 宋体;"><span>推荐：在后面的步骤添加</span></span><span><span style="font-family: Times New Roman;">Terminal</span><span style="font-family: 宋体;">右键菜单后，直接在文件夹上右键选择</span><span style="font-family: Times New Roman;">Open in Terminal</span></span><span style="font-family: 宋体;"><span>就可以命令行到对应的文件夹路径下</span></span></span></p><p>&nbsp;</p><h2 id="2-3-nbsp-nbsp-nbsp-安装相关软件"><a href="#2-3-nbsp-nbsp-nbsp-安装相关软件" class="headerlink" title="2.3&nbsp;&nbsp;&nbsp; 安装相关软件"></a><span style="font-family: Arial;"><span><span>2.3</span></span></span><span style="font-family: Times New Roman;"><span><span>&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span><span>安装相关软件</span></span></span></h2><p>&nbsp;</p><p><span style="font-family: Times New Roman;"><span>sudo apt-get install build-essential</span></span></p><p>&nbsp;</p><p><span style="font-family: Times New Roman;"><span>sudo apt-get install flex bison</span></span></p><p>&nbsp;</p><p><span style="font-family: Times New Roman;"><span>sudo apt-get install libboost1.50-all-dev</span></span></p><p>&nbsp;</p><p><span style="font-family: Times New Roman;"><span>sudo apt-get install libqt4-dev qt4-dev-tools qt4-designer libqt4-gui libqt4-network libqt4-opengl-dev</span></span></p><p>&nbsp;</p><p><span style="font-family: Times New Roman;"><span>sudo apt-get install zlib1g-dev</span></span></p><p>&nbsp;</p><p><span style="font-family: Times New Roman;"><span>sudo apt-get install nautilus-open-terminal</span></span></p><p>&nbsp;</p><p><span style="font-family: 宋体;"><span>上面第一条命令用于安装基本编译器，后面四条命令分别用于安装</span></span><span><span style="font-family: Times New Roman;">flex &amp; bison, Boost, Qt4, zlib</span><span style="font-family: 宋体;">，直接输入运行（</span><span style="font-family: Times New Roman;">GUI</span><span style="font-family: 宋体;">的</span><span style="font-family: Times New Roman;">Terminal</span><span style="font-family: 宋体;">中可以直接右键粘贴），最后一条用于将</span><span style="font-family: Times New Roman;">Terminal</span></span><span style="font-family: 宋体;"><span>添加到右键菜单。</span></span></p><p>&nbsp;</p><p><span style="font-family: Times New Roman;"><span>PS</span></span><span><span style="font-family: 宋体;">：</span><span style="font-family: Times New Roman;">apt-get</span><span style="font-family: 宋体;">表示从网上软件库中搜索和安装软件，添加终端模拟器</span><span style="font-family: Times New Roman;">Terminal</span></span><span style="font-family: 宋体;"><span>后，直接右键项可以进入对应文件夹命令行。</span></span></p><p>&nbsp;</p><p>&nbsp;</p><h1 id="3-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-安装配置Robocup-2D环境"><a href="#3-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-安装配置Robocup-2D环境" class="headerlink" title="3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 安装配置Robocup 2D环境"></a><span style="font-family: Times New Roman;"><span>3</span><span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span>安装配置</span></span><span><span style="font-family: Times New Roman;">Robocup 2D</span></span><span style="font-family: 宋体;"><span>环境</span></span></h1><p><span style="font-family: 宋体;"><span>下载</span></span><span><span style="font-family: Times New Roman;">rcssserver</span><span style="font-family: 宋体;">和</span><span style="font-family: Times New Roman;">rcssmonitor</span><span style="font-family: 宋体;">（我下载的是</span><span style="font-family: Times New Roman;">15.1.0</span><span style="font-family: 宋体;">版本，地址</span><a href="http://sourceforge.net/projects/sserver/files/" target="_blank" rel="noopener"><span style="color: #0000ff; font-family: Times New Roman;"><span style="text-decoration: underline;">http://sourceforge.net/projects/sserver/files/</span></span></a><span style="font-family: 宋体;">）。分别解压到</span><span style="font-family: Times New Roman;">Ubuntu</span><span style="font-family: 宋体;">的本地文件夹内，如</span><span style="font-family: Times New Roman;">/Robocup/ rcssserver-15.1.0</span><span style="font-family: 宋体;">，</span><span style="font-family: Times New Roman;">/Robocup/ rcssmonitor-15.1.0</span></span><span style="font-family: 宋体;"><span>。</span></span></p><h2 id="3-1-nbsp-nbsp-nbsp-安装rcssserver"><a href="#3-1-nbsp-nbsp-nbsp-安装rcssserver" class="headerlink" title="3.1&nbsp;&nbsp;&nbsp; 安装rcssserver"></a><span style="font-family: Arial;"><span><span>3.1</span></span></span><span style="font-family: Times New Roman;"><span><span>&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span><span>安装</span></span></span><span style="font-family: Arial;"><span><span>rcssserver</span></span></span></h2><p><span style="font-family: 宋体;"><span>进入</span></span><span><span style="font-family: Times New Roman;">rcssserver-15.1.0</span></span><span style="font-family: 宋体;"><span>目录后运行下面的命令：</span></span></p><p><span style="font-family: Times New Roman;"><span>./configure</span></span></p><p><span style="font-family: Times New Roman;"><span>make</span></span></p><p><span style="font-family: Times New Roman;"><span>sudo make install</span></span></p><p><span style="font-family: Times New Roman;"><span>./configure</span></span><span><span style="font-family: 宋体;">用来检查环境，</span><span style="font-family: Times New Roman;">make</span><span style="font-family: 宋体;">用来编译，</span><span style="font-family: Times New Roman;">make install</span><span style="font-family: 宋体;">用来安装（</span><span style="font-family: Times New Roman;">sudo</span></span><span style="font-family: 宋体;"><span>赋予权限）。</span></span></p><p><span style="font-family: Times New Roman;"><span>PS</span></span><span><span style="font-family: 宋体;">：</span><span style="font-family: Times New Roman;">./configure</span><span style="font-family: 宋体;">后，一般</span><span style="font-family: Times New Roman;">checking</span><span style="font-family: 宋体;">后的结果不为</span><span style="font-family: Times New Roman;">no</span><span style="font-family: 宋体;">表示环境符合，如下图两个</span><span style="font-family: Times New Roman;">&rdquo;no&rdquo;</span><span style="font-family: 宋体;">结果表示</span><span style="font-family: Times New Roman;">Boost</span><span style="font-family: 宋体;">没有装好，</span><span style="font-family: Times New Roman;">make</span></span><span style="font-family: 宋体;"><span>的时候可能会出现一些问题。</span></span></p><p>&nbsp;</p><p>&nbsp;</p><p><span style="font-family: Times New Roman;"><span>make</span></span><span><span style="font-family: 宋体;">和</span><span style="font-family: Times New Roman;">make install</span><span style="font-family: 宋体;">通过时不会出现</span><span style="font-family: Times New Roman;">error</span></span><span style="font-family: 宋体;"><span>提示。</span></span></p><h2 id="3-2-nbsp-nbsp-nbsp-安装monitor"><a href="#3-2-nbsp-nbsp-nbsp-安装monitor" class="headerlink" title="3.2&nbsp;&nbsp;&nbsp; 安装monitor"></a><span style="font-family: Arial;"><span><span>3.2</span></span></span><span style="font-family: Times New Roman;"><span><span>&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span><span>安装</span></span></span><span style="font-family: Arial;"><span><span>monitor</span></span></span></h2><p><span style="font-family: 宋体;"><span>进入</span></span><span><span style="font-family: Times New Roman;">rcssmonitor -15.1.0</span></span><span style="font-family: 宋体;"><span>目录后运行下面的命令：</span></span></p><p><span style="font-family: Times New Roman;"><span>./configure</span></span></p><p><span style="font-family: Times New Roman;"><span>make</span></span></p><p><span style="font-family: Times New Roman;"><span>sudo make install</span></span></p><p><span style="font-family: Times New Roman;"><span>PS</span></span><span><span style="font-family: 宋体;">：安装</span><span style="font-family: Times New Roman;">Monitor</span><span style="font-family: 宋体;">的时候可能会出现</span><span style="font-family: Times New Roman;">connot find &ndash;lxxx</span></span><span style="font-family: 宋体;"><span>的错误，是因为没有找到相关库，一般通过</span></span></p><p><span style="font-family: Times New Roman;"><span>sudo apt-get install libxxx-dev</span></span></p><p><span style="font-family: 宋体;"><span>可以在线安装解决，但有的命名不一定是这种规则，可以通过</span></span></p><p><span style="font-family: Times New Roman;"><span>apt-cache search xxx</span></span></p><p><span style="font-family: 宋体;"><span>来找到对应名字安装，或者直接百度之。</span></span></p><p><span style="font-family: 宋体;"><span>下图是我安装的时候出现的问题及解决方法：</span></span></p><p>&nbsp;</p><p>&nbsp;</p><p><span style="font-family: Times New Roman;"><span>sudo apt-get install libaudio-dev libXt-dev libpng-dev liboobs-1-dev </span></span><span><span style="color: #000000; font-family: Times New Roman;">libXi-dev</span></span><span style="font-family: Times New Roman;"><span> libXrender-dev libfreetype6-dev libfontconfig-dev</span></span></p><h2 id="3-3-nbsp-nbsp-nbsp-运行server和monitor"><a href="#3-3-nbsp-nbsp-nbsp-运行server和monitor" class="headerlink" title="3.3&nbsp;&nbsp;&nbsp; 运行server和monitor"></a><span style="font-family: Arial;"><span><span>3.3</span></span></span><span style="font-family: Times New Roman;"><span><span>&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span><span>运行</span></span></span><span><span style="font-family: Arial;"><span>server</span></span><span style="font-family: 宋体;"><span>和</span></span></span><span style="font-family: Arial;"><span><span>monitor</span></span></span></h2><p><span style="font-family: Times New Roman;"><span>rcsoccersim</span></span></p><p><span style="font-family: 宋体;"><span>无论在哪个路径下输入上述命令即可启动，启动后如下图：</span></span></p><p>&nbsp;<img src="http://115.159.108.204/wp-content/uploads/2016/03/24133916-01385e48bddc47d6b0b2c1913392abac.png" alt="http://115.159.108.204/wp-content/uploads/2016/03/24133916-01385e48bddc47d6b0b2c1913392abac.png"></p><p>&nbsp;</p><p><span style="font-family: 宋体;"><span>如果出来的界面不像这样（例如最上面没有球员位），可能需要重启。</span></span></p><h1 id="4-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-添加球员"><a href="#4-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-nbsp-添加球员" class="headerlink" title="4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 添加球员"></a><span style="font-family: Times New Roman;"><span>4</span><span><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><span style="font-family: 宋体;"><span>添加球员</span></span></h1><p><span style="font-family: 宋体;"><span>下载中科大</span></span><span><span style="font-family: Times New Roman;">WrightEagle</span><span style="font-family: 宋体;">站队开源代码（本例使用</span><span style="font-family: Times New Roman;">WrightEagleBASE-4.0.0 </span><span style="font-family: 宋体;">）</span><a href="http://www.wrighteagle.org/2d/" target="_blank" rel="noopener"><span style="color: #0000ff; font-family: Times New Roman;"><span style="text-decoration: underline;">http://www.wrighteagle.org/2d/</span></span></a></span><span style="font-family: 宋体;"><span>。</span></span></p><p><span style="font-family: 宋体;"><span>解压后</span></span><span><span style="font-family: Times New Roman;">copy</span></span><span style="font-family: 宋体;"><span>一份，表示两个队伍的源码，如图：</span></span></p><p>&nbsp;</p><p>&nbsp;</p><p><span style="font-family: 宋体;"><span>修改其中一个文件夹内的</span></span><span><span style="font-family: Times New Roman;">start.sh</span><span style="font-family: 宋体;">文件，修改队名为</span><span style="font-family: Times New Roman;">WEBase2</span></span><span style="font-family: 宋体;"><span>，保存。</span></span></p><p>&nbsp;<img src="http://115.159.108.204/wp-content/uploads/2016/03/24133111-28a1587e20424adcaf59b0047d08b723.png" alt="http://115.159.108.204/wp-content/uploads/2016/03/24133111-28a1587e20424adcaf59b0047d08b723.png"></p><p>&nbsp;</p><p><span style="font-family: 宋体;"><span>分别打开两个</span></span><span><span style="font-family: Times New Roman;">Terminal A</span><span style="font-family: 宋体;">和</span><span style="font-family: Times New Roman;">B</span><span style="font-family: 宋体;">进入两个队伍的文件夹下，运行</span><span style="font-family: Times New Roman;">make</span><span style="font-family: 宋体;">命令编译。下图是</span><span style="font-family: Times New Roman;">Terminal A make</span></span><span style="font-family: 宋体;"><span>好之后的显示内容。</span></span></p><p>&nbsp;</p><p>&nbsp;</p><p><span style="font-family: 宋体;"><span>再新开一个</span></span><span><span style="font-family: Times New Roman;">Terminal C</span><span style="font-family: 宋体;">，运行</span><span style="font-family: Times New Roman;">rcsoccersim</span></span><span style="font-family: 宋体;"><span>命令启动服务端和监视器。</span></span></p><p><span style="font-family: 宋体;"><span>两个队伍的代码编译好后，分别在</span></span><span><span style="font-family: Times New Roman;">Terminal A</span><span style="font-family: 宋体;">和</span><span style="font-family: Times New Roman;">B</span><span style="font-family: 宋体;">中输入</span><span style="font-family: Times New Roman;">./start.sh</span></span><span style="font-family: 宋体;"><span>命令向服务端加入球员。</span></span></p><p>&nbsp;</p><p>&nbsp;</p><p><span style="font-family: 宋体;"><span>在监控器界面按</span></span><span><span style="font-family: Times New Roman;">Ctrl+K</span><span style="font-family: 宋体;">可以开始比赛，在</span><span style="font-family: Times New Roman;">Terminal C</span><span style="font-family: 宋体;">界面按</span><span style="font-family: Times New Roman;">Ctrl+C</span></span><span style="font-family: 宋体;"><span>可以关闭监控器。</span></span></p><p>&nbsp;</p><p>&nbsp;</p>]]></content>
+      
+      <categories>
+          
+          <category> robocup </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> robocup2d </tag>
+            
+            <tag> ubuntu </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>终端显示颜色 windows</title>
+      <link href="/2015/06/26/%E7%BB%88%E7%AB%AF%E6%98%BE%E7%A4%BA%E9%A2%9C%E8%89%B2%20windows/"/>
+      <content type="html"><![CDATA[<p>  c++在终端中调出颜色，也就是修改终端的颜色<br><a id="more"></a></p><div class="cnblogs_code"><p><img src="http://115.159.108.204/wp-content/uploads/2016/03/ContractedBlock.gif" alt=""><img src="http://115.159.108.204/wp-content/uploads/2016/03/ExpandedBlockStart.gif" alt=""></p><p><div id="cnblogs_code_open_e99e9fa6-7190-4444-b982-0008c1907551" class="cnblogs_code_hide"></div></p><pre>#include <span style="color: #000000;">#include </span><span style="color: #0000ff;">int</span><span style="color: #000000;"> main(){    system(</span><span style="color: #800000;">"</span><span style="color: #800000;">color 1A</span><span style="color: #800000;">"</span><span style="color: #000000;">);    printf(</span><span style="color: #800000;">"</span><span style="color: #800000;">Hello World\n</span><span style="color: #800000;">"</span><span style="color: #000000;">);    </span><span style="color: #0000ff;">return</span> <span style="color: #800080;">0</span><span style="color: #000000;">;}</span></pre></div><span class="cnblogs_code_collapse">改终端颜色</span><pre>//颜色列表//颜色属性由两个十六进制数字指定 -- 第一个为背景，第二个则为//前景。每个数字可以为以下任何值之一:    0 = 黑色       8 = 灰色    1 = 蓝色       9 = 淡蓝色    2 = 绿色       A = 淡绿色    3 = 湖蓝色     B = 淡浅绿色    4 = 红色       C = 淡红色    5 = 紫色       D = 淡紫色    6 = 黄色       E = 淡黄色    7 = 白色       F = 亮白色</pre>]]></content>
+      
+      <categories>
+          
+          <category> c++ </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> c++ </tag>
+            
+            <tag> windows </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    <entry>
+      <title>孟大神的心得</title>
+      <link href="/2015/06/20/OJ%E4%BA%BA%E7%9A%84%E5%BF%83%E5%BE%97/"/>
+      <content type="html"><![CDATA[<p>ACM心得，大神写的<br><a id="more"></a></p><p>首先，先介绍下<span style="font-family: 'Times New Roman';">ACM-ICPC</span><span style="font-family: 宋体;">这个比赛</span><span style="font-family: 'Times New Roman';">.</span></p><p>&nbsp;</p><p>ACM<span style="font-family: 宋体;">国际大学生程序设计竞赛</span><span style="font-family: Arial;">(</span><span style="font-family: 宋体;">英文全称：</span><span style="font-family: Arial;">ACM&nbsp;International&nbsp;Collegiate&nbsp;Programming&nbsp;Contest</span><span style="font-family: 宋体;">（</span><span style="font-family: Arial;">ACM-ICPC</span><span style="font-family: 宋体;">或</span><span style="font-family: Arial;">ICPC</span><span style="font-family: 宋体;">）是由美国计算机协会（</span><span style="font-family: Arial;">ACM</span><span style="font-family: 宋体;">）主办的，一项旨在展示大学生创新能力、团队精神和在压力下编写程序、分析和解决问题能力的年度竞赛。</span></p><p>&nbsp;</p><p>参加ACM<span style="font-family: 宋体;">的好处：</span></p><p>1<span style="font-family: 宋体;">、极大地提高计算机编程水平。</span></p><p>2.&nbsp;<span style="font-family: 宋体;">在考研面试中，有很多学校要机试，基本上是简单的</span><span style="font-family: Arial;">ICPC</span><span style="font-family: 宋体;">题目，去一些公司找工作时，有时也会考察一些基本的算法题，参加</span><span style="font-family: Arial;">ACM</span><span style="font-family: 宋体;">可以让你在找工作前不用临时突击算法。</span></p><p>3<span style="font-family: 宋体;">、在学校本科生中编程水平最高的群体中学习，你可以认识来自不同专业，不同年级，不同班级的大神，从而提高水平，收获友谊。&nbsp;</span></p><p>4.<span style="font-family: 宋体;">极大地锻炼你的自学能力</span><span style="font-family: Arial;">.</span></p><p>&nbsp;</p><p>比赛是<span style="font-family: Arial;">3</span><span style="font-family: 宋体;">人组队（省赛和区域赛都是组队赛，校赛是个人赛），可以携带诸如书、手册、&nbsp;程序清单等参考资料，不能携带任何可用计算机处理的软件或数据、不能携带任何类型的通讯工具</span><span style="font-family: Arial;">.</span></p><p>区域赛中一般命题<span style="font-family: Arial;">10</span><span style="font-family: 宋体;">题左右，试题描述为英文</span>（校赛和省赛为中文题），比赛时间为<span style="font-family: Arial;">5</span><span style="font-family: 宋体;">个小时，前四个小时可以看到实时排名，最后一小时封榜，无法看到排名。</span></p><p>返回结果：</p><p>1.Accepted.&nbsp;—<span style="font-family: 宋体;">通过！</span><span style="font-family: Arial;">(AC)</span></p><p>2.Wrong&nbsp;Anwser.&nbsp;—<span style="font-family: 宋体;">答案错。</span><span style="font-family: Arial;">(WA)</span></p><p>3.RunTime&nbsp;Error.&nbsp;—<span style="font-family: 宋体;">程序运行出错，意外终止等。</span><span style="font-family: Arial;">(RTE)</span></p><p>4.Time&nbsp;Limit&nbsp;Exceeded.&nbsp;—<span style="font-family: 宋体;">超时。程序没在规定时间内出答案。</span><span style="font-family: Arial;">(TLE)</span></p><p>5.Presentation&nbsp;Error.&nbsp;—<span style="font-family: 宋体;">格式错。程序没按规定的格式输出答案。</span><span style="font-family: Arial;">(PE)</span></p><p>6.Memory&nbsp;Limit&nbsp;Exceeded.&nbsp;—<span style="font-family: 宋体;">超内存。程序没在规定空间内出答案。</span><span style="font-family: Arial;">(MLE)</span></p><p>7.Compile&nbsp;Error.&nbsp;—<span style="font-family: 宋体;">编译错。程序编译不过。</span><span style="font-family: Arial;">(CE)</span></p><p>&nbsp;</p><p>ACM-ICPC&nbsp;<span style="font-family: 宋体;">这个比赛，难度很大，毕竟是国际级别的，需要付出很多，做很多题，但含金量很大，获奖后对找工作有很大帮助</span><span style="font-family: Arial;">.</span></p><p>&nbsp;<img src="http://115.159.108.204/wp-content/uploads/2016/03/201114268577812.png" alt=""></p><p>有的同学可能会觉得，这个比赛太难了，自己参加了也拿不了奖<span style="font-family: Arial;">…&nbsp;</span><span style="font-family: 宋体;">那么你可以将目标放低一点，以校赛和省赛为目标</span><span style="font-family: Arial;">.&nbsp;</span><span style="font-family: 宋体;">总之，还是希望更多的同学能参与进来，哪怕是学一些简单的算法也好</span><span style="font-family: Arial;">..</span></p><p>区域赛在每年的下半年举行，每年的上半年是世界总决赛。</p><p>建议不要使用<span style="font-family: Arial;">VC6.0</span><span style="font-family: 宋体;">（不好用，而且比赛也不能用）</span></p><p>可以试试<span style="font-family: Arial;">DEVC++&nbsp;&nbsp;Codeblocks</span></p><p>新人的练级地点就是网上的<span style="font-family: Arial;">OJ</span><span style="font-family: 宋体;">（</span>Online&nbsp;Judge），比如</p><p>杭电<span style="font-family: Arial;">OJ</span><span style="font-family: 宋体;">：&nbsp;</span><a href="http://acm.hdu.edu.cn/" target="_blank" rel="noopener">http://acm.hdu.edu.cn/</a></p><p>北大<span style="font-family: Arial;">OJ</span><span style="font-family: 宋体;">：</span><a href="http://poj.org/" target="_blank" rel="noopener">http://poj.org/</a></p><p>遇到想了半天还没想出的题<span style="font-family: Arial;">…</span><span style="font-family: 宋体;">就别想了，去网上找找攻略，比如</span></p><p>&nbsp;</p><p>别人的博客里会有这道题的解法，然后就这样慢慢打怪升级</p><p>新人练级第一题&nbsp;&nbsp;</p><p>Hdu1000</p><p>熟悉OJ<span style="font-family: 宋体;">的使用方法</span></p><p>在自己的电脑写好代码好，点击提交</p><p>#&nbsp;include&nbsp;<iostream></iostream></p><p>#&nbsp;include&nbsp;<cstdio></cstdio></p><p>using&nbsp;namespace&nbsp;std&nbsp;;</p><p>int&nbsp;main&nbsp;()</p><p>{</p><p>&nbsp;&nbsp;&nbsp;&nbsp;int&nbsp;a&nbsp;,&nbsp;b&nbsp;;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;while(scanf(“%d&nbsp;%d”&nbsp;,&nbsp;&amp;a&nbsp;,&nbsp;&amp;b)&nbsp;!=&nbsp;EOF)//多组输入</p><p>&nbsp;&nbsp;&nbsp;&nbsp;{</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;printf(“%d\n”&nbsp;,&nbsp;a+b)&nbsp;;</p><p>&nbsp;&nbsp;&nbsp;&nbsp;}</p><p>&nbsp;&nbsp;&nbsp;&nbsp;return&nbsp;0&nbsp;;</p><p>}</p><p>&nbsp;</p><p>Hdu1089-&nbsp;hdu1096&nbsp;<span style="font-family: 宋体;">（练习输入输出）</span></p><p>杭电第<span style="font-family: Arial;">11</span><span style="font-family: 宋体;">页前面的一些中文题都比较简单，</span><span style="font-family: Arial;">C/C++</span><span style="font-family: 宋体;">还不太熟的可以做一下</span></p><p>&nbsp;</p><p>这些基础题不一定非得做完<span style="font-family: 'Times New Roman';">…</span><span style="font-family: 宋体;">自己可以选着做</span></p><p>然后说下算法，分类大概是这样的</p><p>&nbsp;<img src="http://115.159.108.204/wp-content/uploads/2016/03/201112583883807.jpg" alt=""></p><p>Kuangbin<span style="font-family: 宋体;">大神的博客：</span></p><p><a href="http://www.cnblogs.com/kuangbin/" target="_blank" rel="noopener">http://www.cnblogs.com/kuangbin/</a></p><p>队友们的博客：</p><p><a href="http://www.cnblogs.com/neopenx/" target="_blank" rel="noopener">http://www.cnblogs.com/neopenx/</a></p><p><a href="http://www.cnblogs.com/cnblogs321114287/" target="_blank" rel="noopener">http://www.cnblogs.com/cnblogs321114287/</a></p><p><a href="http://www.cnblogs.com/pdev/" target="_blank" rel="noopener">http://www.cnblogs.com/pdev/</a></p><p><a href="http://www.cnblogs.com/-Buff-/" target="_blank" rel="noopener">http://www.cnblogs.com/-Buff-/</a></p><p><a href="http://blog.csdn.net/zjtzyrc/" target="_blank" rel="noopener">http://blog.csdn.net/zjtzyrc/</a></p><p><a href="http://netcanblog.sinaapp.com/" target="_blank" rel="noopener">http://netcanblog.sinaapp.com/</a></p><p>—恢复内容结束—</p>]]></content>
+      
+      <categories>
+          
+          <category> c++ </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> c++ </tag>
+            
+            <tag> acm </tag>
+            
+        </tags>
+      
+    </entry>
+    
+  
+  
+</search>

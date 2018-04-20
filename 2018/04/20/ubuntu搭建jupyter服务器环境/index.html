@@ -95,7 +95,7 @@
 <meta property="og:image" content="http://oosu5b60t.bkt.clouddn.com/images/选区_014.png">
 <meta property="og:image" content="http://oosu5b60t.bkt.clouddn.com/images/选区_017.png">
 <meta property="og:image" content="http://oosu5b60t.bkt.clouddn.com/images/选区_018.png">
-<meta property="og:updated_time" content="2018-04-20T06:05:53.104Z">
+<meta property="og:updated_time" content="2018-04-20T06:06:57.440Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ubuntu搭建jupyter服务器环境">
 <meta name="twitter:description" content="在大佬的召唤下,参加一个比赛,然后需要在ubuntu16.04环境下搭建jupyter环境,记录一下.">
@@ -440,7 +440,7 @@
 <li>2.2 生成密码<img src="http://oosu5b60t.bkt.clouddn.com/images/选区_010.png">
 此时会生成hash code,在.jypyter/jupyter_notebook.json里面</li>
 <li><p>2.3 配置jupyter<br>编辑生成的<code>jupyter_notebook.py</code><br>主要有这么几行</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">c.NotebookApp.ip = &apos;*&apos; #让所有ip都可以访问该主机</span><br><span class="line">c.NotebookApp.password = u&apos;sha1:bcd259ccf...&lt;your hashed password here&gt;&apos;#改为自己的sha1code</span><br><span class="line">c.NotebookApp.open_browser = False#在本地可以改为True</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">c.NotebookApp.ip = \&apos;*\&apos; #让所有ip都可以访问该主机</span><br><span class="line">c.NotebookApp.password = u\&apos;sha1:bcd259ccf...&lt;your hashed password here&gt;\&apos;#改为自己的sha1code</span><br><span class="line">c.NotebookApp.open_browser = False#在本地可以改为True</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>2.4 在主机上开启服务<br><code>jupyter notebook</code><br>本机访问 <code>192.168.1.124:8888</code>就可以看到显示的jupyter</p>
 <img src="http://oosu5b60t.bkt.clouddn.com/images/选区_014.png"></li>

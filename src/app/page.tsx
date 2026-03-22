@@ -2,51 +2,80 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Hero Section */}
-      <div className="container mx-auto px-4 py-20">
-        <div className="max-w-4xl mx-auto">
-          {/* 标题 */}
-          <h1 className="text-6xl font-bold text-gray-900 mb-6 animate-fade-in">
+    <main className="min-h-screen bg-white">
+      {/* Hero Section - Monday Lab 风格 */}
+      <div className="container mx-auto px-4 py-24">
+        <div className="max-w-3xl mx-auto">
+          {/* 主标题 */}
+          <h1 className="text-7xl font-bold text-gray-900 mb-8 tracking-tight">
             大磊子的博客
           </h1>
-          <p className="text-2xl text-gray-600 mb-12 animate-fade-in-delay">
+          
+          {/* 副标题 */}
+          <p className="text-3xl text-gray-600 mb-16 font-light">
             Hi，终于等到你 👋
           </p>
 
-          {/* 标签 */}
-          <div className="flex flex-wrap gap-3 mb-16">
-            <span className="px-4 py-2 bg-white rounded-full shadow-md text-indigo-600 font-medium">
-              🤹‍♂️ 斜杠青年
-            </span>
-            <span className="px-4 py-2 bg-white rounded-full shadow-md text-indigo-600 font-medium">
-              💻 CS 学生
-            </span>
-            <span className="px-4 py-2 bg-white rounded-full shadow-md text-indigo-600 font-medium">
-              🛠️ 工具控
-            </span>
-            <span className="px-4 py-2 bg-white rounded-full shadow-md text-indigo-600 font-medium">
-              📸 摄影爱好者
-            </span>
-          </div>
+          {/* 个人介绍卡片 - Monday Lab 风格 */}
+          <div className="mb-20">
+            <div className="flex items-center gap-4 mb-6">
+              <span className="text-4xl">🤹‍♂️</span>
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-900">
+                  周一同学
+                </h2>
+                <p className="text-gray-600">
+                  Stay foolish, Stay hungry.
+                </p>
+              </div>
+            </div>
+            
+            {/* 标签 */}
+            <div className="flex flex-wrap gap-2 mb-8">
+              <span className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm">
+                /斜杠青年
+              </span>
+              <span className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm">
+                CS 学生
+              </span>
+              <span className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm">
+                工具控
+              </span>
+              <span className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm">
+                摄影爱好者
+              </span>
+            </div>
 
-          {/* 简介卡片 */}
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-12">
-            <p className="text-lg text-gray-700 leading-relaxed mb-6">
-              是个平平无奇但又热爱学习的斜杠青年。现居云南，体制内工作，热爱技术，喜欢折腾各种工具。
-            </p>
+            {/* 详细介绍 */}
             <div className="grid md:grid-cols-3 gap-6">
-              <div className="p-4 bg-blue-50 rounded-lg">
-                <h3 className="font-semibold text-blue-800 mb-2">👨‍💻 技术</h3>
-                <p className="text-sm text-blue-600">React, Next.js, Node.js, Python</p>
+              <div className="p-6 bg-gray-50 rounded-xl">
+                <div className="text-3xl mb-3">👨‍💻</div>
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  Web 前端
+                </h3>
+                <p className="text-sm text-gray-600">
+                  大厂码农，国内某互联网厂搬砖。
+                </p>
               </div>
-              <div className="p-4 bg-green-50 rounded-lg">
-                <h3 className="font-semibold text-green-800 mb-2">📸 爱好</h3>
-                <p className="text-sm text-green-600">摄影、书法、网文创作</p>
+              
+              <div className="p-6 bg-gray-50 rounded-xl">
+                <div className="text-3xl mb-3">🎨</div>
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  喜欢美学
+                </h3>
+                <p className="text-sm text-gray-600">
+                  热爱一切美学，喜欢用各种设计工具造图。
+                </p>
               </div>
-              <div className="p-4 bg-purple-50 rounded-lg">
-                <h3 className="font-semibold text-purple-800 mb-2">🏗️ DIY</h3>
-                <p className="text-sm text-purple-600">手搓自拍亭、各种工具</p>
+              
+              <div className="p-6 bg-gray-50 rounded-xl">
+                <div className="text-3xl mb-3">🧩</div>
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  斜杆青年
+                </h3>
+                <p className="text-sm text-gray-600">
+                  是个平平无奇但是又很热爱学习的斜杆青年。
+                </p>
               </div>
             </div>
           </div>
@@ -55,32 +84,42 @@ export default function Home() {
           <div className="flex gap-4">
             <Link
               href="/about"
-              className="px-8 py-4 bg-indigo-600 text-white rounded-full font-medium hover:bg-indigo-700 transition shadow-lg"
+              className="px-8 py-4 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition"
             >
               关于我 →
             </Link>
             <Link
-              href="/blog"
-              className="px-8 py-4 bg-white text-indigo-600 rounded-full font-medium hover:bg-gray-50 transition shadow-lg border-2 border-indigo-600"
+              href="/projects"
+              className="px-8 py-4 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition"
             >
-              博客文章
+              项目展示
             </Link>
           </div>
         </div>
       </div>
 
       {/* 页脚 */}
-      <footer className="container mx-auto px-4 py-8 text-center text-gray-500">
-        <p>© 2026 大磊子 · Built with Next.js & Tailwind CSS</p>
-        <p className="text-sm mt-2">
-          <a href="https://github.com/bmyell" className="text-indigo-600 hover:underline" target="_blank">
-            GitHub
-          </a>
-          {' '}·{' '}
-          <a href="mailto:1812630796@qq.com" className="text-indigo-600 hover:underline">
-            邮箱
-          </a>
-        </p>
+      <footer className="container mx-auto px-4 py-12 border-t border-gray-200">
+        <div className="flex justify-between items-center">
+          <p className="text-gray-500 text-sm">
+            © 2026 大磊子
+          </p>
+          <div className="flex gap-4 text-sm text-gray-500">
+            <a 
+              href="https://github.com/bmyell" 
+              className="hover:text-gray-900 transition"
+              target="_blank"
+            >
+              GitHub
+            </a>
+            <a 
+              href="mailto:1812630796@qq.com" 
+              className="hover:text-gray-900 transition"
+            >
+              邮箱
+            </a>
+          </div>
+        </div>
       </footer>
     </main>
   );
